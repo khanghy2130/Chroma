@@ -66,6 +66,9 @@ var TEXTURE_LOADER = {
     c1 = color(c1[0], c1[1], c1[2]);
     c2 = color(c2[0], c2[1], c2[2]);
 
+    if (this.textureProgress === 0) {
+      this.textureGraphics.background(255, 0, 0);
+    }
     for (var i = 0; i < this.LOAD_SPEED; i++) {
       var x = this.textureProgress % this.textureGraphics.width;
       var y = floor(this.textureProgress / this.textureGraphics.width);
