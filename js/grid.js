@@ -23,9 +23,6 @@ PLACEABLE {
 }
 */
 
-const SCALER = 42; // grid scale
-const CORES = [];
-
 // nCores is neighbor cores
 function getShapes(core, N_CORE, skippedShapeIndex, SP) {
   const cores = N_CORE.map((index) => {
