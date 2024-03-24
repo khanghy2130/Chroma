@@ -58,8 +58,8 @@ function draw() {
       const shape = dummies[i];
       push(); // pushMatrix();
 
-      shape.x += 0.1;
-      shape.y += 0.1;
+      shape.x += 1;
+      shape.y += 1;
       shape.r += 1;
       translate(shape.x, shape.y);
       rotate(shape.r);

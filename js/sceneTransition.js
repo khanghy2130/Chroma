@@ -27,10 +27,10 @@ const SCENE_TRANSITION = {
         triangle(
           0,
           0,
-          width * 2 - this.progress * width * 2,
+          (width - this.progress * width) * 2,
           0,
           0,
-          height * 2 - this.progress * height * 2
+          (height - this.progress * height) * 2
         );
       }
 
