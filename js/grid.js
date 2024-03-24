@@ -8,13 +8,13 @@ CORE {
 }
 
 SHAPE {
-  shapeIndex: (index in core.shapes),
-  nShapes[3 | 4] (clockwise order),
+  shapeIndex: (index in core.shapes)
+  nShapes[3 | 4] (clockwise order) (neighbors)
   points[3 | 4]
   
   centerPos
-  defaultOrientation
-  slot { image, rotation, color }
+  gridShapeOrientation
+  slot { image, textureOrientation, color }
 }
 
 (standalone list, made of shapes and midlines)
@@ -23,6 +23,7 @@ PLACEABLE {
 }
 */
 
+// make all shapes for a core
 // nCores is neighbor cores
 function getShapes(core, N_CORE, skippedShapeIndex, SP) {
   const cores = N_CORE.map((index) => {
@@ -54,7 +55,18 @@ function getShapes(core, N_CORE, skippedShapeIndex, SP) {
       }
     }
 
-    //////// add .centerPos
+    // add .centerPos
+    if (shapeIsSquare(shapeIndex)) {
+      shape.centerPos = [
+        (shape.points[0][0] + shape.points[2][0]) / 2,
+        (shape.points[0][1] + shape.points[2][1]) / 2,
+      ];
+    } else {
+      shape.centerPos = [
+        (shape.points[0][0] + shape.points[1][0] + shape.points[2][0]) / 3,
+        (shape.points[0][1] + shape.points[1][1] + shape.points[2][1]) / 3,
+      ];
+    }
 
     return shape;
   });

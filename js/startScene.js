@@ -5,16 +5,6 @@ const START_SCENE = {
   // runs when done loading
   onLoad: function () {
     for (let i = 0; i < 100; i++) {
-      dummies.push({
-        x: random(0, width),
-        y: random(0, height),
-        r: random(0, 100),
-        img:
-          random() > 0.5
-            ? getRandomShapeImage(0, randomInt(0, 4))
-            : getRandomShapeImage(4, randomInt(0, 4)),
-      });
-
       SCENE_TRANSITION.switchScene("PLAY");
     }
   },

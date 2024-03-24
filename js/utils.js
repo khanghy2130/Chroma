@@ -40,12 +40,16 @@ function getShapeColor(colorIndex, shadeIndex) {
 }
 
 function getRandomShapeImage(shapeIndex, colorIndex) {
-  // below index 4 is triangle
   return getRandomItem(
-    (shapeIndex < 4
-      ? TEXTURE_LOADER.triangleImages
-      : TEXTURE_LOADER.squareImages)[colorIndex]
+    (shapeIsSquare(shapeIndex)
+      ? TEXTURE_LOADER.squareImages
+      : TEXTURE_LOADER.triangleImages)[colorIndex]
   );
+}
+
+function shapeIsSquare(shapeIndex) {
+  // below index 4 is triangle
+  return shapeIndex >= 4;
 }
 
 function randomInt(start, end) {

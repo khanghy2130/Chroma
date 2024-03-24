@@ -1,5 +1,3 @@
-var dummies = []; // { x, y, r }
-
 function setup() {
   createCanvas(600, 600);
 
@@ -51,21 +49,9 @@ function draw() {
           vertex(shape.points[k][0], shape.points[k][1]);
         }
         endShape(CLOSE);
+        fill("yellow");
+        circle(shape.centerPos[0], shape.centerPos[1], 10);
       }
-    }
-
-    for (let i = 0; i < dummies.length; i++) {
-      const shape = dummies[i];
-      push(); // pushMatrix();
-
-      shape.x += 1;
-      shape.y += 1;
-      shape.r += 1;
-      translate(shape.x, shape.y);
-      rotate(shape.r);
-      image(shape.img, 0, 0, 100, 100);
-
-      pop(); // popMatrix();
     }
 
     fill(255);
