@@ -20,25 +20,15 @@ function draw() {
   if (scene === "PLAY") {
     background(BG_COLOR);
 
-    // render points ///
-    strokeWeight(10);
-    stroke(250);
+    ///// test render
     for (let i = 0; i < CORES.length; i++) {
-      const points = CORES[i].points;
-      for (let j = 0; j < points.length; j++) {
-        const pos = points[j];
-        point(pos[0], pos[1]);
-      }
-    }
-
-    // render shapes ////
-    noStroke();
-    for (let i = 0; i < CORES.length; i++) {
+      noStroke();
       // render core index
       fill(255);
       textSize(30);
       text(i, CORES[i].points[0][0], CORES[i].points[0][1] + SCALER * 2);
 
+      // render shape
       for (let j = 0; j < CORES[i].shapes.length; j++) {
         const shape = CORES[i].shapes[j];
         if (shape === null) continue;
@@ -52,6 +42,15 @@ function draw() {
         fill("yellow");
         circle(shape.centerPos[0], shape.centerPos[1], 10);
       }
+    }
+
+    // render grid lines
+    stroke(GRID_COLOR);
+    strokeWeight(2);
+    for (let i = 0; i < GRID_LINES.length; i++) {
+      const l = GRID_LINES[i];
+      if (l === null) continue;
+      line(l[0][0], l[0][1], l[1][0], l[1][1]);
     }
 
     fill(255);

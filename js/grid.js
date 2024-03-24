@@ -4,7 +4,6 @@ CORE {
   points[4]
   shapes[6] [t,t,t,t,s,s]
   
-  lines[]
 }
 
 SHAPE {
@@ -14,7 +13,7 @@ SHAPE {
   
   centerPos
   gridShapeOrientation
-  slot { image, textureOrientation, color }
+  render { img, textureOrientation, colorIndex, sealIndex }
 }
 
 (standalone list, made of shapes and midlines)
@@ -25,14 +24,15 @@ PLACEABLE {
 
 // make all shapes for a core
 // nCores is neighbor cores
-function getShapes(core, N_CORE, skippedShapeIndex, SP) {
+function makeShapesAndLines(core, N_CORE, skippedShapeIndex, SP) {
   const cores = N_CORE.map((index) => {
     if (index === null) return null;
     else return CORES[index];
   });
   cores.unshift(core); // add main core too
 
-  return SP.map((pairs, shapeIndex) => {
+  // add shapes to core
+  core.shapes = SP.map((pairs, shapeIndex) => {
     // skip this shape?
     if (skippedShapeIndex === shapeIndex) {
       return null;
@@ -70,6 +70,29 @@ function getShapes(core, N_CORE, skippedShapeIndex, SP) {
 
     return shape;
   });
+
+  const lines = [
+    getLine(core.shapes[0], 0, 1),
+    getLine(core.shapes[0], 0, 2),
+    getLine(core.shapes[0], 1, 2),
+    getLine(core.shapes[1], 0, 2),
+    getLine(core.shapes[1], 1, 2),
+    getLine(core.shapes[2], 0, 1),
+    getLine(core.shapes[3], 0, 1),
+    getLine(core.shapes[2], 0, 2),
+    getLine(core.shapes[2], 1, 2),
+    getLine(core.shapes[3], 0, 2),
+  ];
+
+  ///// go thru lines to add midline (except between 2 triangles) placeables to placeables
+}
+
+// also push line into GRID_LINES
+function getLine(shape, point1Index, point2Index) {
+  if (shape === null) return null;
+  const l = [shape.points[point1Index], shape.points[point2Index]];
+  GRID_LINES.push(l);
+  return l;
 }
 
 function initializeGridData() {
@@ -160,13 +183,25 @@ function initializeGridData() {
     ],
   ];
 
-  // add .shapes to cores
+  // add .shapes to cores (also add lines to gridLines)
   CORES.forEach((core, i) => {
     let skippedShapeIndex = null;
     if (i === 0) skippedShapeIndex = 0;
     if (i === 8) skippedShapeIndex = 1;
-    core.shapes = getShapes(core, N_CORES[i], skippedShapeIndex, SHAPES_POINTS);
+    makeShapesAndLines(core, N_CORES[i], skippedShapeIndex, SHAPES_POINTS);
   });
 
+  // add edge lines that were left out
+  getLine(CORES[0].shapes[1], 0, 1);
+  getLine(CORES[0].shapes[4], 0, 1);
+  getLine(CORES[0].shapes[5], 1, 2);
+  getLine(CORES[1].shapes[4], 0, 1);
+  getLine(CORES[2].shapes[5], 1, 2);
+  getLine(CORES[3].shapes[5], 3, 0);
+  getLine(CORES[5].shapes[4], 2, 3);
+  getLine(CORES[6].shapes[5], 3, 0);
+  getLine(CORES[7].shapes[4], 2, 3);
+
   // add .nShapes to each of .shapes
+  /////
 }

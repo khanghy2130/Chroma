@@ -1,8 +1,11 @@
 const BG_COLOR = 30;
+const GRID_COLOR = 150;
 
 // GRID
 const SCALER = 42; // grid scale
 const CORES = [];
+const GRID_LINES = [];
+const PLACEABLES = []; // {pos, associatedShapes, type(midline/center)}
 
 // TEXTURE
 const NOISE_SCALE = 0.012;
