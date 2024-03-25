@@ -5,7 +5,6 @@ const GRID_COLOR = 150;
 const SCALER = 42; // grid scale
 const CORES = [];
 const GRID_LINES = [];
-const PLACEABLES = []; // {pos, associatedShapes, type(midline/center)}
 
 // TEXTURE
 const NOISE_SCALE = 0.012;
@@ -36,6 +35,7 @@ const SHAPES_COLORS = [
 
 // CONTROLS
 let scene = "START"; // START / PLAY / END
+const placeableEdges = []; // {pos, triangle, square}
 
 function getShapeColor(colorIndex, shadeIndex) {
   let c = SHAPES_COLORS[colorIndex][shadeIndex];

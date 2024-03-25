@@ -39,8 +39,18 @@ function draw() {
           vertex(shape.points[k][0], shape.points[k][1]);
         }
         endShape(CLOSE);
-        fill("yellow");
+        fill(255, 255, 0, 50);
         circle(shape.centerPos[0], shape.centerPos[1], 10);
+
+        // show neighbors
+        if (dist(mouseX, mouseY, shape.centerPos[0], shape.centerPos[1]) < 10) {
+          for (let nb = 0; nb < shape.nShapes.length; nb++) {
+            const nShape = shape.nShapes[nb];
+            if (!nShape) continue;
+            fill("red");
+            circle(nShape.centerPos[0], nShape.centerPos[1], 10);
+          }
+        }
       }
     }
 

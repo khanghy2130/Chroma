@@ -12,7 +12,7 @@ SHAPE {
   points[3 | 4]
   
   centerPos
-  gridShapeOrientation
+  gridOrientation
   render { img, textureOrientation, colorIndex, sealIndex }
 }
 
@@ -202,6 +202,61 @@ function initializeGridData() {
   getLine(CORES[6].shapes[5], 3, 0);
   getLine(CORES[7].shapes[4], 2, 3);
 
+  // triangle: [triangle, square(left), square(right)]
+  const N_SHAPE_INDICES = [
+    // [ [nCoreIndex (+1), shapeIndex(from that core)], ... ]
+    [
+      [0, 1],
+      [6, 5],
+      [2, 4],
+    ],
+    [
+      [0, 0],
+      [0, 5],
+      [0, 4],
+    ],
+    [
+      [0, 3],
+      [5, 5],
+      [0, 4],
+    ],
+    [
+      [0, 2],
+      [0, 5],
+      [3, 4],
+    ],
+    [
+      [6, 3],
+      [0, 1],
+      [0, 2],
+      [5, 0],
+    ],
+    [
+      [0, 1],
+      [2, 2],
+      [3, 0],
+      [0, 3],
+    ],
+  ];
   // add .nShapes to each of .shapes
-  /////
+  CORES.forEach((core, coreIndex) => {
+    const cores = N_CORES[coreIndex].map((index) => {
+      if (index === null) return null;
+      else return CORES[index];
+    });
+    cores.unshift(core); // add main core too
+
+    core.shapes.forEach((shape, shapeIndex) => {
+      if (!shape) return;
+      const nShapeIndices = N_SHAPE_INDICES[shapeIndex];
+      shape.nShapes = nShapeIndices.map(([_coreIndex, nShapeIndex]) => {
+        // This core doesn't exist?
+        if (cores[_coreIndex] === null) {
+          return null;
+        } else {
+          return cores[_coreIndex].shapes[nShapeIndex];
+        }
+      });
+    });
+  });
 }
