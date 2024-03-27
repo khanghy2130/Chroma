@@ -9,7 +9,7 @@ const GRID_LINES = [];
 // TEXTURE
 const NOISE_SCALE = 0.012;
 const IMAGES_AMOUNT = 3; // per shape per color
-const LOAD_SPEED = 4000;
+const LOAD_SPEED = 2000;
 const SHAPES_COLORS = [
   // green
   [

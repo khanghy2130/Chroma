@@ -11,6 +11,7 @@ function setup() {
   textSize(40);
 
   TEXTURE_LOADER.createMasks();
+  START_SCENE.titleSetup();
 
   initializeGridData();
   print(CORES);
