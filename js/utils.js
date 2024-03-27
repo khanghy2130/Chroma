@@ -1,3 +1,5 @@
+const __skip__ = !true;
+
 const BG_COLOR = 30;
 const GRID_COLOR = 150;
 
@@ -8,8 +10,7 @@ const GRID_LINES = [];
 
 // TEXTURE
 const NOISE_SCALE = 0.012;
-const IMAGES_AMOUNT = 3; // per shape per color
-const LOAD_SPEED = 2000;
+let IMAGES_AMOUNT = 1; //// 4
 const SHAPES_COLORS = [
   // green
   [

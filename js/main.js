@@ -1,6 +1,11 @@
 function setup() {
   createCanvas(600, 600);
 
+  if (__skip__) {
+    IMAGES_AMOUNT = 1;
+    START_SCENE.t = 221;
+  }
+
   // configs
   pixelDensity(1); // nKA
   rectMode(CENTER);
@@ -72,4 +77,12 @@ function draw() {
   }
 
   SCENE_TRANSITION.update();
+}
+
+function mouseClicked() {
+  if (scene === "PLAY") {
+  } else if (scene === "START") {
+    START_SCENE.mouseClicked();
+  } else if (scene === "END") {
+  }
 }

@@ -3,6 +3,7 @@ const TEXTURE_LOADER = {
   _groupIndex: 0,
   _colorIndex: 0,
 
+  LOAD_SPEED: 500,
   textureSeed: 0,
   textureGraphics: null,
   textureProgress: 0, // 0: create new graphics
@@ -53,7 +54,7 @@ const TEXTURE_LOADER = {
     if (this.textureProgress === 0) {
       this.textureGraphics.background(255, 0, 0);
     }
-    for (let i = 0; i < LOAD_SPEED; i++) {
+    for (let i = 0; i < this.LOAD_SPEED; i++) {
       const x = this.textureProgress % this.textureGraphics.width;
       const y = floor(this.textureProgress / this.textureGraphics.width);
 
@@ -86,7 +87,6 @@ const TEXTURE_LOADER = {
         this.squareMask = null;
         this.triangleMask = null;
         this.textureGraphics = null;
-        START_SCENE.onLoad();
         return;
       }
       this._groupIndex = 0; // reset for next color
