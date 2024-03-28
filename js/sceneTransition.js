@@ -2,7 +2,7 @@ const SCENE_TRANSITION = {
   progress: 1, // 0 to 1 twice
   isClosing: true,
   prevScene: null,
-  nextScene: null,
+  nextScene: null, // no input if this is not null
   switchScene: function (nextScene) {
     this.nextScene = nextScene;
     this.progress = 0;
@@ -37,6 +37,7 @@ const SCENE_TRANSITION = {
       // check done
       if (this.progress >= 1 && this.isClosing) {
         scene = this.nextScene;
+        this.nextScene = null;
         this.progress = 0;
         this.isClosing = false;
       }

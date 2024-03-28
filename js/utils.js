@@ -1,7 +1,9 @@
 const __skip__ = !true;
 
 const BG_COLOR = 30;
+const LIGHT_COLOR = 230;
 const GRID_COLOR = 150;
+const BUTTON_GLOW_SPEED = 0.05;
 
 // GRID
 const SCALER = 42; // grid scale

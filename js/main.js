@@ -10,10 +10,11 @@ function setup() {
   pixelDensity(1); // nKA
   rectMode(CENTER);
   imageMode(CENTER);
-  textAlign(CENTER);
+  textAlign(CENTER, CENTER);
   strokeJoin(ROUND);
   angleMode(DEGREES); // KA
   textSize(40);
+  textFont("monospace"); // textFont(createFont("monospace")); // KA
 
   TEXTURE_LOADER.createMasks();
   START_SCENE.titleSetup();
@@ -23,6 +24,7 @@ function setup() {
 }
 
 function draw() {
+  cursor(ARROW);
   if (scene === "PLAY") {
     background(BG_COLOR);
 
