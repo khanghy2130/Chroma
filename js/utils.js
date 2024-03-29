@@ -9,6 +9,7 @@ const BUTTON_GLOW_SPEED = 0.05;
 const SCALER = 42; // grid scale
 const CORES = [];
 const GRID_LINES = [];
+const PLUS_DOTS = [];
 
 // TEXTURE
 const NOISE_SCALE = 0.012;
@@ -39,6 +40,7 @@ const SHAPES_COLORS = [
 // CONTROLS
 let scene = "START"; // START / PLAY / END
 const placeableEdges = []; // {pos, triangle, square}
+let activePlusDot = null;
 
 function getShapeColor(colorIndex, shadeIndex) {
   let c = SHAPES_COLORS[colorIndex][shadeIndex];

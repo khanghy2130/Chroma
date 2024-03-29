@@ -31,11 +31,6 @@ function draw() {
     ///// test render
     for (let i = 0; i < CORES.length; i++) {
       noStroke();
-      // render core index
-      fill(255);
-      textSize(30);
-      text(i, CORES[i].points[0][0], CORES[i].points[0][1] + SCALER * 2);
-
       // render shape
       for (let j = 0; j < CORES[i].shapes.length; j++) {
         const shape = CORES[i].shapes[j];
@@ -62,6 +57,24 @@ function draw() {
       }
     }
 
+    //// all plus dots
+    fill(255, 200);
+    noStroke();
+    for (let i = 0; i < PLUS_DOTS.length; i++) {
+      const pd = PLUS_DOTS[i];
+      circle(pd.pos[0], pd.pos[1], 20);
+      if (dist(mouseX, mouseY, pd.pos[0], pd.pos[1]) < 10) {
+        for (let j = 0; j < pd.shapes.length; j++) {
+          const sh = pd.shapes[j];
+          beginShape();
+          for (let v = 0; v < sh.points.length; v++) {
+            vertex(sh.points[v][0], sh.points[v][1]);
+          }
+          endShape(CLOSE);
+        }
+      }
+    }
+
     // render grid lines
     stroke(GRID_COLOR);
     strokeWeight(2);
@@ -71,6 +84,7 @@ function draw() {
       line(l[0][0], l[0][1], l[1][0], l[1][1]);
     }
 
+    ///// render frame rate
     fill(255);
     text(frameRate().toFixed(1), 50, 30);
   } else if (scene === "START") {

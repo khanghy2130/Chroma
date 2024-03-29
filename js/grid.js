@@ -6,7 +6,7 @@ CORE {
   
 }
 
-SHAPE {
+SHAPE: null | {
   shapeIndex: (index in core.shapes)
   nShapes[3 | 4] (clockwise order) (neighbors)
   points[3 | 4]
@@ -14,6 +14,10 @@ SHAPE {
   centerPos
   gridOrientation
   render { img, textureOrientation, colorIndex, sealIndex }
+}
+
+PLUS_DOT {
+  pos, shapes[5]
 }
 
 (standalone list, made of shapes and midlines)
@@ -202,6 +206,8 @@ function initializeGridData() {
   getLine(CORES[6].shapes[5], 3, 0);
   getLine(CORES[7].shapes[4], 2, 3);
 
+  const plusDotShapesCount = {}; // {pos.toString(): {pos, shapes[])}
+
   // triangle: [triangle, square(left), square(right)]
   const N_SHAPE_INDICES = [
     // [ [nCoreIndex (+1), shapeIndex(from that core)], ... ]
@@ -257,6 +263,28 @@ function initializeGridData() {
           return cores[_coreIndex].shapes[nShapeIndex];
         }
       });
+
+      // also count shapes for making plus dots
+      for (let i = 0; i < shape.points.length; i++) {
+        const pos = shape.points[i];
+        const key = pos[0] + "," + pos[1];
+        if (plusDotShapesCount[key]) plusDotShapesCount[key].shapes.push(shape);
+        else {
+          // create new pos counter
+          plusDotShapesCount[key] = {
+            pos: pos,
+            shapes: [shape],
+          };
+        }
+      }
     });
   });
+
+  // filter plus dots
+  for (let key in plusDotShapesCount) {
+    const posCounter = plusDotShapesCount[key];
+    if (posCounter.shapes.length === 5) {
+      PLUS_DOTS.push(posCounter); // add this plus dot if has 5 shapes
+    }
+  }
 }
