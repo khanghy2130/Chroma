@@ -18,9 +18,6 @@ function setup() {
 
   TEXTURE_LOADER.createMasks();
   START_SCENE.titleSetup();
-
-  initializeGridData();
-  print(CORES);
 }
 
 function draw() {

@@ -15,7 +15,7 @@ const PLUS_DOTS = [];
 
 // TEXTURE
 const NOISE_SCALE = 0.012;
-let IMAGES_AMOUNT = 1; //// 4
+let IMAGES_AMOUNT = 4;
 const SHAPES_COLORS = [
   // green
   [
@@ -49,12 +49,18 @@ function getShapeColor(colorIndex, shadeIndex) {
   return color(c[0], c[1], c[2]);
 }
 
-function getRandomShapeImage(shapeIndex, colorIndex) {
-  return getRandomItem(
-    (shapeIsSquare(shapeIndex)
-      ? TEXTURE_LOADER.squareImages
-      : TEXTURE_LOADER.triangleImages)[colorIndex]
-  );
+function getNewShapeRenderData(shape, colorIndex) {
+  const isSquare = shapeIsSquare(shape);
+  return {
+    img: getRandomItem(
+      (isSquare ? TEXTURE_LOADER.squareImages : TEXTURE_LOADER.triangleImages)[
+        colorIndex
+      ]
+    ),
+    colorIndex: colorIndex,
+    textureOri: isSquare ? randomInt(0, 4) * 90 : randomInt(0, 3) * 120,
+    sealIndex: 0,
+  };
 }
 
 function shapeIsSquare(shape) {

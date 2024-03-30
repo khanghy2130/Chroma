@@ -2,6 +2,22 @@ const PLAY_SCENE = {
   activePlusDot: null,
   generatedPlaceables: [], // placeables[] for each of the pieces. multiple from one square
 
+  initializeGame: function () {
+    ////// add dummy shapes
+    for (let i = 0; i < ALL_SQUARES.length; i++) {
+      ALL_SQUARES[i].renderData = getNewShapeRenderData(
+        ALL_SQUARES[i],
+        randomInt(0, 4)
+      );
+    }
+    for (let i = 0; i < ALL_TRIANGLES.length; i++) {
+      ALL_TRIANGLES[i].renderData = getNewShapeRenderData(
+        ALL_TRIANGLES[i],
+        randomInt(0, 4)
+      );
+    }
+  },
+
   render: function () {
     background(BG_COLOR);
 
@@ -18,7 +34,6 @@ const PLAY_SCENE = {
     for (let i = 0; i < ALL_SQUARES.length; i++) {
       renderShape(ALL_SQUARES[i], SQUARE_SIZE);
     }
-    ///// render all triangles
     for (let i = 0; i < ALL_TRIANGLES.length; i++) {
       renderShape(ALL_TRIANGLES[i], TRIANGLE_SIZE);
     }
@@ -52,14 +67,7 @@ const PLAY_SCENE = {
 function renderShape(shape, size) {
   push(); // pushMatrix(); // KA
   translate(shape.centerPos[0], shape.centerPos[1]);
-  rotate(GRID_ORI[shape.shapeIndex]); //// add texture ori
-  ///// should render from slot img instead
-  let imagesArray;
-  if (shapeIsSquare(shape)) {
-    imagesArray = TEXTURE_LOADER.squareImages;
-  } else {
-    imagesArray = TEXTURE_LOADER.triangleImages;
-  }
-  image(imagesArray[floor((frameCount * 0.01) % 4)][0], 0, 0, size, size);
+  rotate(GRID_ORI[shape.shapeIndex] + shape.renderData.textureOri);
+  image(shape.renderData.img, 0, 0, size, size);
   pop(); // popMatrix(); // KA
 }

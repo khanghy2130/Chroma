@@ -12,7 +12,7 @@ SHAPE: null | {
   points[3 | 4]
   
   centerPos
-  render { img, textureOri, colorIndex, sealIndex }
+  renderData: null | { img, textureOri, colorIndex, sealIndex }
 }
 
 PLUS_DOT {
@@ -43,6 +43,7 @@ function makeShapesAndLines(core, N_CORE, skippedShapeIndex, SP) {
     const shape = {
       shapeIndex: shapeIndex,
       points: [],
+      renderData: null,
     };
 
     // add points

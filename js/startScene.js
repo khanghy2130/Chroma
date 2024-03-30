@@ -31,9 +31,10 @@ const START_SCENE = {
       const pos2 = this.TDArray[this.t - 1];
       this.t++;
       if (pos1[0] !== 0 && pos2[0] !== 0) {
-        colorMode(HSB, 255);
         strokeWeight(25);
+        colorMode(HSB, 255);
         stroke(map(pos1[0], 0, width, 0, 255), 255, 255);
+        colorMode(RGB, 255);
         line(pos1[0], pos1[1], pos2[0], pos2[1]);
         this.layer2Graphics.line(pos1[0], pos1[1], pos2[0], pos2[1]);
       }
@@ -58,8 +59,6 @@ const START_SCENE = {
     }
     // done loading?
     else {
-      ///  play, touchscreen toggle, tutorial toggle
-      colorMode(RGB, 255);
       noStroke();
       fill(BG_COLOR);
       rect(width / 2, 400, width, 250);
@@ -77,9 +76,9 @@ const START_SCENE = {
       );
       colorMode(HSB, 255);
       fill(this.displayLoadingProgress * 255, 255, 255);
+      colorMode(RGB, 255);
       rect(this.displayLoadingProgress * width, 598, 6, 6);
     }
-    colorMode(RGB, 255); // reset
   },
 
   mouseClicked: function () {
@@ -107,6 +106,8 @@ const START_SCENE = {
       },
       () => {
         SCENE_TRANSITION.switchScene("PLAY");
+        initializeGridData();
+        PLAY_SCENE.initializeGame();
       }
     );
     this.buttons.tutorialToggle = new Btn(
