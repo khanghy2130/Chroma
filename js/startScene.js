@@ -121,7 +121,7 @@ const START_SCENE = {
         text("tutorial", x, y);
         if (this.tutorialOn) fill(LIGHT_COLOR);
         else noFill();
-        strokeWeight(1);
+        strokeWeight(2);
         stroke(LIGHT_COLOR);
         ellipse(x - 85, y, 15, 15);
       },
@@ -141,7 +141,7 @@ const START_SCENE = {
         text("touchscreen", x, y);
         if (this.touchscreenOn) fill(LIGHT_COLOR);
         else noFill();
-        strokeWeight(1);
+        strokeWeight(2);
         stroke(LIGHT_COLOR);
         ellipse(x - 85, y, 15, 15);
       },

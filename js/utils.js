@@ -1,4 +1,4 @@
-const __skip__ = !true;
+const __skip__ = !!true;
 
 const BG_COLOR = 30;
 const LIGHT_COLOR = 230;
@@ -7,6 +7,8 @@ const BUTTON_GLOW_SPEED = 0.05;
 
 // GRID
 const SCALER = 42; // grid scale
+const SQUARE_SIZE = 85;
+const TRIANGLE_SIZE = 75;
 const CORES = [];
 const GRID_LINES = [];
 const PLUS_DOTS = [];
@@ -38,9 +40,9 @@ const SHAPES_COLORS = [
 ];
 
 // CONTROLS
+const ALL_SQUARES = [];
+const ALL_TRIANGLES = [];
 let scene = "START"; // START / PLAY / END
-const placeableEdges = []; // {pos, triangle, square}
-let activePlusDot = null;
 
 function getShapeColor(colorIndex, shadeIndex) {
   let c = SHAPES_COLORS[colorIndex][shadeIndex];
@@ -55,9 +57,9 @@ function getRandomShapeImage(shapeIndex, colorIndex) {
   );
 }
 
-function shapeIsSquare(shapeIndex) {
+function shapeIsSquare(shape) {
   // below index 4 is triangle
-  return shapeIndex >= 4;
+  return shape.shapeIndex >= 4;
 }
 
 function randomInt(start, end) {

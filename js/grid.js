@@ -12,19 +12,17 @@ SHAPE: null | {
   points[3 | 4]
   
   centerPos
-  gridOrientation
-  render { img, textureOrientation, colorIndex, sealIndex }
+  render { img, textureOri, colorIndex, sealIndex }
 }
 
 PLUS_DOT {
   pos, shapes[5]
 }
 
-(standalone list, made of shapes and midlines)
-PLACEABLE {
-  
-}
 */
+
+// orientation for each of the 6 shapes in a core
+const GRID_ORI = [0, 180, 270, 90, 330, 30];
 
 // make all shapes for a core
 // nCores is neighbor cores
@@ -59,17 +57,19 @@ function makeShapesAndLines(core, N_CORE, skippedShapeIndex, SP) {
       }
     }
 
-    // add .centerPos
-    if (shapeIsSquare(shapeIndex)) {
+    // add .centerPos & add shape to all shapes arrays
+    if (shapeIsSquare(shape)) {
       shape.centerPos = [
         (shape.points[0][0] + shape.points[2][0]) / 2,
         (shape.points[0][1] + shape.points[2][1]) / 2,
       ];
+      ALL_SQUARES.push(shape);
     } else {
       shape.centerPos = [
         (shape.points[0][0] + shape.points[1][0] + shape.points[2][0]) / 3,
         (shape.points[0][1] + shape.points[1][1] + shape.points[2][1]) / 3,
       ];
+      ALL_TRIANGLES.push(shape);
     }
 
     return shape;
@@ -87,8 +87,6 @@ function makeShapesAndLines(core, N_CORE, skippedShapeIndex, SP) {
     getLine(core.shapes[2], 1, 2),
     getLine(core.shapes[3], 0, 2),
   ];
-
-  ///// go thru lines to add midline (except between 2 triangles) placeables to placeables
 }
 
 // also push line into GRID_LINES
@@ -211,6 +209,8 @@ function initializeGridData() {
   // triangle: [triangle, square(left), square(right)]
   const N_SHAPE_INDICES = [
     // [ [nCoreIndex (+1), shapeIndex(from that core)], ... ]
+    // triangle: other triangle, sLeft, sRight
+    // square: matched with points
     [
       [0, 1],
       [6, 5],

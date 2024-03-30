@@ -33,7 +33,7 @@ const TEXTURE_LOADER = {
     maskGraphics = createGraphics(150, 150, P2D);
     // maskGraphics.background(0); // KA
     maskGraphics.strokeJoin(ROUND);
-    maskGraphics.strokeWeight(25);
+    maskGraphics.strokeWeight(20);
     maskGraphics.stroke(255);
     maskGraphics.triangle(
       maskGraphics.width / 2,
