@@ -1,20 +1,49 @@
 const PLAY_SCENE = {
   activePlusDot: null,
-  generatedPlaceables: [], // placeables[] for each of the pieces. multiple from one square
+
+  // {type, placeables, centerPos, flyers}
+  // FLYER: { shapeType, default:{offsetCenterPos, r}, pos, tPos, r, tR}[]}
+  // t = target (follow centerPos OR be fitting)
+  pieces: [],
+  pieceBtns: [],
 
   initializeGame: function () {
-    ////// add dummy shapes
-    for (let i = 0; i < ALL_SQUARES.length; i++) {
-      ALL_SQUARES[i].renderData = getNewShapeRenderData(
-        ALL_SQUARES[i],
-        randomInt(0, 4)
-      );
+    // make piece buttons
+    if (this.pieceBtns.length === 0) {
+      const btnWidth = width / 3;
+      const btnHeight = 130;
+      const btnY = height - btnHeight / 2;
+      this.pieceBtns = [
+        new Btn(
+          btnWidth / 2,
+          btnY,
+          btnWidth * 0.95,
+          btnHeight * 0.9,
+          null,
+          () => this.pieceBtnClicked(0)
+        ),
+        new Btn(
+          btnWidth / 2 + btnWidth,
+          btnY,
+          btnWidth * 0.95,
+          btnHeight * 0.9,
+          null,
+          () => this.pieceBtnClicked(1)
+        ),
+        new Btn(
+          btnWidth / 2 + btnWidth * 2,
+          btnY,
+          btnWidth * 0.95,
+          btnHeight * 0.9,
+          null,
+          () => this.pieceBtnClicked(2)
+        ),
+      ];
     }
-    for (let i = 0; i < ALL_TRIANGLES.length; i++) {
-      ALL_TRIANGLES[i].renderData = getNewShapeRenderData(
-        ALL_TRIANGLES[i],
-        randomInt(0, 4)
-      );
+
+    // generate 3 pieces
+    for (let i = 0; i < 3; i++) {
+      this.pieces[i] = this.generatePiece();
     }
   },
 
@@ -30,38 +59,43 @@ const PLAY_SCENE = {
       line(l[0][0], l[0][1], l[1][0], l[1][1]);
     }
 
-    ///// render all square
-    for (let i = 0; i < ALL_SQUARES.length; i++) {
-      renderShape(ALL_SQUARES[i], SQUARE_SIZE);
+    // render piece buttons
+    for (let i = 0; i < this.pieceBtns.length; i++) {
+      this.pieceBtns[i].render();
     }
-    for (let i = 0; i < ALL_TRIANGLES.length; i++) {
-      renderShape(ALL_TRIANGLES[i], TRIANGLE_SIZE);
-    }
-
-    //// all plus dots
-    // fill(255, 200);
-    // noStroke();
-    // for (let i = 0; i < PLUS_DOTS.length; i++) {
-    //   const pd = PLUS_DOTS[i];
-    //   circle(pd.pos[0], pd.pos[1], 20);
-    //   if (dist(mouseX, mouseY, pd.pos[0], pd.pos[1]) < 10) {
-    //     for (let j = 0; j < pd.shapes.length; j++) {
-    //       const sh = pd.shapes[j];
-    //       beginShape();
-    //       for (let v = 0; v < sh.points.length; v++) {
-    //         vertex(sh.points[v][0], sh.points[v][1]);
-    //       }
-    //       endShape(CLOSE);
-    //     }
-    //   }
-    // }
 
     ///// render frame rate
     fill(255);
+    noStroke();
     text(frameRate().toFixed(1), 50, 30);
   },
 
-  mouseClicked: function () {},
+  mouseClicked: function () {
+    ///// block input here
+
+    // piece button clicked
+    for (let i = 0; i < this.pieceBtns.length; i++) {
+      if (this.pieceBtns[i].isHovered) return this.pieceBtns[i].clicked();
+    }
+  },
+
+  pieceBtnClicked: function (pieceIndex) {
+    print(pieceIndex);
+  },
+
+  generatePiece: function () {
+    // determine type
+    const randomNum = random(100);
+    let shapesCountIndex;
+    // 10%, 35%, 55%
+    if (randomNum < 10) shapesCountIndex = 0;
+    else if (randomNum < 10 + 35) shapesCountIndex = 1;
+    else shapesCountIndex = 2;
+    const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);
+
+    //// return {type, placeables*, centerPos, flyers}
+    return { type: type };
+  },
 };
 
 function renderShape(shape, size) {
