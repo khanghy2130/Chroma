@@ -1,11 +1,9 @@
 const PLAY_SCENE = {
   activePlusDot: null,
 
-  // {type, placeables, centerPos, flyers}
-  // FLYER: { shapeType, default:{offsetCenterPos, r}, pos, tPos, r, tR}[]}
-  // t = target (follow centerPos OR be fitting)
   pieces: [],
   pieceBtns: [],
+  selectedPieceIndex: null,
 
   initializeGame: function () {
     // make piece buttons
@@ -43,7 +41,8 @@ const PLAY_SCENE = {
 
     // generate 3 pieces
     for (let i = 0; i < 3; i++) {
-      this.pieces[i] = this.generatePiece();
+      this.pieces[i] = generatePiece(i);
+      print(this.pieces[i]); //////
     }
   },
 
@@ -59,9 +58,49 @@ const PLAY_SCENE = {
       line(l[0][0], l[0][1], l[1][0], l[1][1]);
     }
 
-    // render piece buttons
-    for (let i = 0; i < this.pieceBtns.length; i++) {
-      this.pieceBtns[i].render();
+    // render piece flyers & piece buttons
+    for (let i = 0; i < 3; i++) {
+      // render piece flyer
+      push(); // pushMatrix(); // KA
+      const flyer = this.pieces[i].flyer;
+      translate(flyer.pos[0], flyer.pos[1]);
+      rotate(flyer.r);
+      scale(flyer.scaling);
+      // render each fshape
+      for (let f = 0; f < flyer.fShapes.length; f++) {
+        const fShape = flyer.fShapes[f];
+        push(); // pushMatrix(); // KA
+        translate(fShape.pos[0], fShape.pos[1]);
+        rotate(fShape.r + fShape.renderData.textureOri);
+        image(
+          fShape.renderData.img,
+          0,
+          0,
+          fShape.renderData.size,
+          fShape.renderData.size
+        );
+        if (fShape.renderData.sealIndex > 0) {
+          //// render seal
+        }
+        pop(); // popMatrix(); // KA
+      }
+      pop(); // popMatrix(); // KA
+
+      // update flyer animation
+      // is selected piece?
+      if (i === this.selectedPieceIndex) {
+        ///////
+      } else {
+        // grow to default scaling
+        if (flyer.scaling < FLYER_UNSELECTED_SCALING) {
+          flyer.scaling = min(
+            FLYER_UNSELECTED_SCALING,
+            flyer.scaling + FLYER_SIZE_SPEED
+          );
+        }
+      }
+
+      this.pieceBtns[i].render(); // render button frame
     }
 
     ///// render frame rate
@@ -82,26 +121,19 @@ const PLAY_SCENE = {
   pieceBtnClicked: function (pieceIndex) {
     print(pieceIndex);
   },
-
-  generatePiece: function () {
-    // determine type
-    const randomNum = random(100);
-    let shapesCountIndex;
-    // 10%, 35%, 55%
-    if (randomNum < 10) shapesCountIndex = 0;
-    else if (randomNum < 10 + 35) shapesCountIndex = 1;
-    else shapesCountIndex = 2;
-    const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);
-
-    //// return {type, placeables*, centerPos, flyers}
-    return { type: type };
-  },
 };
 
-function renderShape(shape, size) {
+// render shapes on grid only
+function renderShape(shape) {
   push(); // pushMatrix(); // KA
   translate(shape.centerPos[0], shape.centerPos[1]);
   rotate(GRID_ORI[shape.shapeIndex] + shape.renderData.textureOri);
-  image(shape.renderData.img, 0, 0, size, size);
+  image(
+    shape.renderData.img,
+    0,
+    0,
+    shape.renderData.size,
+    shape.renderData.size
+  );
   pop(); // popMatrix(); // KA
 }

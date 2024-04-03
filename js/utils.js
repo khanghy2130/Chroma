@@ -4,6 +4,8 @@ const BG_COLOR = 30;
 const LIGHT_COLOR = 230;
 const GRID_COLOR = 150;
 const BUTTON_GLOW_SPEED = 0.05;
+const FLYER_UNSELECTED_SCALING = 0.8;
+const FLYER_SIZE_SPEED = 0.07;
 
 // GRID
 const SCALER = 42; // grid scale
@@ -40,6 +42,7 @@ const SHAPES_COLORS = [
 ];
 
 // CONTROLS
+const SEALS_AMOUNT = 5;
 const ALL_SQUARES = [];
 const ALL_TRIANGLES = [];
 let scene = "START"; // START / PLAY / END
@@ -49,17 +52,18 @@ function getShapeColor(colorIndex, shadeIndex) {
   return color(c[0], c[1], c[2]);
 }
 
-function getNewShapeRenderData(shape, colorIndex) {
-  const isSquare = shapeIsSquare(shape);
+function newRenderData(isSquare, hasSeal) {
+  const colorIndex = randomInt(0, 4);
   return {
     img: getRandomItem(
       (isSquare ? TEXTURE_LOADER.squareImages : TEXTURE_LOADER.triangleImages)[
         colorIndex
       ]
     ),
-    colorIndex: colorIndex,
     textureOri: isSquare ? randomInt(0, 4) * 90 : randomInt(0, 3) * 120,
-    sealIndex: 0,
+    colorIndex: colorIndex,
+    sealIndex: hasSeal ? randomInt(1, SEALS_AMOUNT + 1) : 0,
+    size: isSquare ? SQUARE_SIZE : TRIANGLE_SIZE,
   };
 }
 
@@ -73,4 +77,11 @@ function randomInt(start, end) {
 }
 function getRandomItem(arr) {
   return arr[randomInt(0, arr.length)];
+}
+
+function nsi(n) {
+  // normalize square index
+  while (n < 0) n += 4;
+  while (n >= 4) n -= 4;
+  return n;
 }
