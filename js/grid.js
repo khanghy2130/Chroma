@@ -22,7 +22,7 @@ PLUS_DOT {
 */
 
 // orientation for each of the 6 shapes in a core
-const GRID_ORI = [0, 180, 270, 90, 330, 30];
+const GRID_ORI = [0, 60, 270, 90, 330, 30];
 
 // make all shapes for a core
 // nCores is neighbor cores

@@ -2,7 +2,7 @@ const PIECE_TYPES = [
   // 1 shape
   ["T", "S"],
   // 2 shapes
-  ["TT", "TS"],
+  ["TT", "ST"],
   // 3 shapes
   ["STT", "TTS", "STS", "TST-", "TST^"],
 ];
@@ -16,29 +16,37 @@ function generatePiece(pieceIndex) {
   if (randomNum < 10) shapesCountIndex = 0;
   else if (randomNum < 10 + 35) shapesCountIndex = 1;
   else shapesCountIndex = 2;
-  const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);
+  const type = "TST-"; ////getRandomItem(PIECE_TYPES[shapesCountIndex]);
 
-  const btnPos = [
+  const btnCenterPos = [
     PLAY_SCENE.pieceBtns[pieceIndex].x,
     PLAY_SCENE.pieceBtns[pieceIndex].y,
   ];
   return {
     type: type,
-    flyer: generatePieceFlyer(type, btnPos),
+    flyer: generatePieceFlyer(type, btnCenterPos),
     placeables: null,
   };
 }
 
-// return Flyer: { fShapes, dPos, pos, r, scaling }
+// return Flyer: { fShapes, default{pos,r}, pos, r, scaling }
 // FShape: { renderData(see grid), r, pos, }
-function generatePieceFlyer(type, btnPos) {
+function generatePieceFlyer(type, btnCenterPos) {
   const flyer = {
     fShapes: [],
-    dPos: btnPos, // could be modified by type
+    default: {
+      // could be modified by type
+      pos: btnCenterPos,
+      r: 0,
+    },
     pos: null,
     r: 0,
     scaling: 0,
   };
+
+  const MS = CORES[4].shapes; // model shapes
+  const MS2 = CORES[6].shapes; // other core
+  let midPos;
   switch (type) {
     case "T":
       // center triangle
@@ -47,7 +55,7 @@ function generatePieceFlyer(type, btnPos) {
         r: 0,
         pos: [0, 0],
       });
-      flyer.dPos[1] += 10;
+      flyer.default.pos[1] += 10;
       break;
     case "S":
       // center square
@@ -57,9 +65,78 @@ function generatePieceFlyer(type, btnPos) {
         pos: [0, 0],
       });
       break;
+    case "TT":
+      // center triangle
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: 0,
+        pos: [0, 0],
+      });
+      // other triangle
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: GRID_ORI[1],
+        pos: [
+          MS[1].centerPos[0] - MS[0].centerPos[0],
+          MS[1].centerPos[1] - MS[0].centerPos[1],
+        ],
+      });
+      flyer.default.pos[0] += 20;
+      flyer.default.r = 90;
+      break;
+    case "ST":
+      midPos = [
+        (MS[4].points[1][0] + MS[4].points[2][0]) / 2,
+        (MS[4].points[1][1] + MS[4].points[2][1]) / 2,
+      ];
+      // center square
+      flyer.fShapes.push({
+        renderData: newRenderData(true),
+        r: GRID_ORI[4],
+        pos: [MS[4].centerPos[0] - midPos[0], MS[4].centerPos[1] - midPos[1]],
+      });
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: GRID_ORI[1],
+        pos: [MS[1].centerPos[0] - midPos[0], MS[1].centerPos[1] - midPos[1]],
+      });
+
+      flyer.default.pos[0] += 10;
+      flyer.default.r = 30;
+      break;
+
+    case "TST-":
+      midPos = [
+        (MS[4].points[1][0] + MS[4].points[2][0]) / 2,
+        (MS[4].points[1][1] + MS[4].points[2][1]) / 2,
+      ];
+      // center square
+      flyer.fShapes.push({
+        renderData: newRenderData(true),
+        r: GRID_ORI[4],
+        pos: [MS[4].centerPos[0] - midPos[0], MS[4].centerPos[1] - midPos[1]],
+      });
+      // triangle
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: GRID_ORI[1],
+        pos: [MS[1].centerPos[0] - midPos[0], MS[1].centerPos[1] - midPos[1]],
+      });
+      // triangle
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: GRID_ORI[0],
+        pos: [MS2[0].centerPos[0] - midPos[0], MS2[0].centerPos[1] - midPos[1]],
+      });
+
+      flyer.default.pos[0] += 35;
+      flyer.default.r = 30;
+      break;
   }
 
-  flyer.pos = [flyer.dPos[0], flyer.dPos[1]]; // set render pos to default
+  // apply default to render
+  flyer.pos = flyer.default.pos.slice(0);
+  flyer.r = flyer.default.r;
   return flyer;
 }
 

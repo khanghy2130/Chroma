@@ -4,6 +4,7 @@ function setup() {
   if (__skip__) {
     IMAGES_AMOUNT = 1;
     START_SCENE.t = 221;
+    TEXTURE_LOADER.LOAD_SPEED = 5000;
   }
 
   // configs

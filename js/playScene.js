@@ -17,7 +17,12 @@ const PLAY_SCENE = {
           btnY,
           btnWidth * 0.95,
           btnHeight * 0.9,
-          null,
+          (x, y) => {
+            ////////// center point for reference
+            stroke(255);
+            strokeWeight(10);
+            point(x, y);
+          },
           () => this.pieceBtnClicked(0)
         ),
         new Btn(
@@ -106,7 +111,8 @@ const PLAY_SCENE = {
     ///// render frame rate
     fill(255);
     noStroke();
-    text(frameRate().toFixed(1), 50, 30);
+    textSize(40);
+    text(frameRate().toFixed(3), 80, 50);
   },
 
   mouseClicked: function () {
