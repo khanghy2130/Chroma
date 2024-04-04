@@ -16,7 +16,7 @@ function generatePiece(pieceIndex) {
   if (randomNum < 10) shapesCountIndex = 0;
   else if (randomNum < 10 + 35) shapesCountIndex = 1;
   else shapesCountIndex = 2;
-  const type = "TST-"; ////getRandomItem(PIECE_TYPES[shapesCountIndex]);
+  const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);
 
   const btnCenterPos = [
     PLAY_SCENE.pieceBtns[pieceIndex].x,
@@ -65,6 +65,7 @@ function generatePieceFlyer(type, btnCenterPos) {
         pos: [0, 0],
       });
       break;
+
     case "TT":
       // center triangle
       flyer.fShapes.push({
@@ -110,19 +111,19 @@ function generatePieceFlyer(type, btnCenterPos) {
         (MS[4].points[1][0] + MS[4].points[2][0]) / 2,
         (MS[4].points[1][1] + MS[4].points[2][1]) / 2,
       ];
-      // center square
+      // square
       flyer.fShapes.push({
         renderData: newRenderData(true),
         r: GRID_ORI[4],
         pos: [MS[4].centerPos[0] - midPos[0], MS[4].centerPos[1] - midPos[1]],
       });
-      // triangle
+      // triangle front
       flyer.fShapes.push({
         renderData: newRenderData(false),
         r: GRID_ORI[1],
         pos: [MS[1].centerPos[0] - midPos[0], MS[1].centerPos[1] - midPos[1]],
       });
-      // triangle
+      // triangle back
       flyer.fShapes.push({
         renderData: newRenderData(false),
         r: GRID_ORI[0],
@@ -131,6 +132,120 @@ function generatePieceFlyer(type, btnCenterPos) {
 
       flyer.default.pos[0] += 35;
       flyer.default.r = 30;
+      break;
+    case "TST^":
+      midPos = [
+        (MS[4].points[1][0] + MS[4].points[2][0]) / 2,
+        (MS[4].points[1][1] + MS[4].points[2][1]) / 2,
+      ];
+      // square
+      flyer.fShapes.push({
+        renderData: newRenderData(true),
+        r: GRID_ORI[4],
+        pos: [MS[4].centerPos[0] - midPos[0], MS[4].centerPos[1] - midPos[1]],
+      });
+      // triangle right (facing down)
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: GRID_ORI[1],
+        pos: [MS[1].centerPos[0] - midPos[0], MS[1].centerPos[1] - midPos[1]],
+      });
+      // triangle left (facing down)
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: GRID_ORI[2],
+        pos: [MS[2].centerPos[0] - midPos[0], MS[2].centerPos[1] - midPos[1]],
+      });
+
+      flyer.default.pos[0] += 24;
+      flyer.default.pos[1] += 12;
+      flyer.default.r = 75;
+      break;
+
+    case "STT":
+      midPos = [
+        (MS[4].points[2][0] + MS[4].points[3][0]) / 2,
+        (MS[4].points[2][1] + MS[4].points[3][1]) / 2,
+      ];
+      // square
+      flyer.fShapes.push({
+        renderData: newRenderData(true),
+        r: GRID_ORI[4],
+        pos: [MS[4].centerPos[0] - midPos[0], MS[4].centerPos[1] - midPos[1]],
+      });
+      // triangle adjacent to square
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: GRID_ORI[2],
+        pos: [MS[2].centerPos[0] - midPos[0], MS[2].centerPos[1] - midPos[1]],
+      });
+      // other triangle
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: GRID_ORI[3],
+        pos: [MS[3].centerPos[0] - midPos[0], MS[3].centerPos[1] - midPos[1]],
+      });
+
+      flyer.default.pos[0] -= 5;
+      flyer.default.pos[1] += 15;
+      flyer.default.r = 330;
+      break;
+    case "TTS":
+      midPos = [
+        (MS[5].points[3][0] + MS[5].points[0][0]) / 2,
+        (MS[5].points[3][1] + MS[5].points[0][1]) / 2,
+      ];
+
+      // other triangle
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: GRID_ORI[2],
+        pos: [MS[2].centerPos[0] - midPos[0], MS[2].centerPos[1] - midPos[1]],
+      });
+      // triangle adjacent to square
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: GRID_ORI[3],
+        pos: [MS[3].centerPos[0] - midPos[0], MS[3].centerPos[1] - midPos[1]],
+      });
+      // square
+      flyer.fShapes.push({
+        renderData: newRenderData(true),
+        r: GRID_ORI[5],
+        pos: [MS[5].centerPos[0] - midPos[0], MS[5].centerPos[1] - midPos[1]],
+      });
+
+      flyer.default.pos[0] += 5;
+      flyer.default.pos[1] += 15;
+      flyer.default.r = 30;
+      break;
+
+    case "STS":
+      // center triangle
+      flyer.fShapes.push({
+        renderData: newRenderData(false),
+        r: GRID_ORI[1],
+        pos: [0, 0],
+      });
+      // square left (facing down)
+      flyer.fShapes.push({
+        renderData: newRenderData(true),
+        r: GRID_ORI[4],
+        pos: [
+          MS[4].centerPos[0] - MS[1].centerPos[0],
+          MS[4].centerPos[1] - MS[1].centerPos[1],
+        ],
+      });
+      // square right (facing down)
+      flyer.fShapes.push({
+        renderData: newRenderData(true),
+        r: GRID_ORI[5],
+        pos: [
+          MS[5].centerPos[0] - MS[1].centerPos[0],
+          MS[5].centerPos[1] - MS[1].centerPos[1],
+        ],
+      });
+      flyer.default.pos[1] -= 22;
       break;
   }
 

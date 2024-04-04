@@ -17,7 +17,7 @@ const PLUS_DOTS = [];
 
 // TEXTURE
 const NOISE_SCALE = 0.012;
-let IMAGES_AMOUNT = 4;
+let IMAGES_AMOUNT = 3;
 const SHAPES_COLORS = [
   // green
   [
