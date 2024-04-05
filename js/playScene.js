@@ -5,7 +5,11 @@ const PLAY_SCENE = {
   pieceBtns: [],
   selectedPieceIndex: null,
 
+  turnsCount: 0,
+
   initializeGame: function () {
+    this.turnsCount = 0;
+
     // make piece buttons
     if (this.pieceBtns.length === 0) {
       const btnWidth = width / 3;
@@ -17,12 +21,7 @@ const PLAY_SCENE = {
           btnY,
           btnWidth * 0.95,
           btnHeight * 0.9,
-          (x, y) => {
-            ////////// center point for reference
-            stroke(255);
-            strokeWeight(10);
-            point(x, y);
-          },
+          null,
           () => this.pieceBtnClicked(0)
         ),
         new Btn(
@@ -75,9 +74,18 @@ const PLAY_SCENE = {
 
   renderPieces: function () {
     for (let i = 0; i < 3; i++) {
+      this.pieceBtns[i].render(); // render button frame
+    }
+    // have selected piece rendered last
+    const pieceIndices = [0, 1, 2];
+    if (this.selectedPieceIndex !== null) {
+      pieceIndices.splice(pieceIndices.indexOf(this.selectedPieceIndex), 1);
+      pieceIndices.push(this.selectedPieceIndex);
+    }
+    for (let i = 0; i < pieceIndices.length; i++) {
       // render piece flyer
       push(); // pushMatrix(); // KA
-      const flyer = this.pieces[i].flyer;
+      const flyer = this.pieces[pieceIndices[i]].flyer;
       translate(flyer.pos[0], flyer.pos[1]);
       rotate(flyer.r);
       scale(flyer.scaling);
@@ -102,20 +110,67 @@ const PLAY_SCENE = {
       pop(); // popMatrix(); // KA
 
       // update flyer animation
+      let targetPos = flyer.default.pos;
+      let targetRotation = flyer.r;
       // is selected piece?
-      if (i === this.selectedPieceIndex) {
-        ///////
-      } else {
+      if (pieceIndices[i] === this.selectedPieceIndex) {
+        // grow to normal scaling
+        if (flyer.scaling < 1) {
+          flyer.scaling = min(1, flyer.scaling + FLYER_SCALING_SPEED);
+        }
+
+        // is hovered on placeable?
+        if (false) {
+          //// targetPos = placeable pos
+          //// targetRotation = placeable r
+        } else {
+          targetPos = [mouseX, mouseY];
+        }
+      }
+      // piece not selected?
+      else {
         // grow to default scaling
         if (flyer.scaling < FLYER_UNSELECTED_SCALING) {
           flyer.scaling = min(
             FLYER_UNSELECTED_SCALING,
-            flyer.scaling + FLYER_SIZE_SPEED
+            flyer.scaling + FLYER_SCALING_SPEED
           );
+        } else if (flyer.scaling > FLYER_UNSELECTED_SCALING) {
+          flyer.scaling = max(
+            FLYER_UNSELECTED_SCALING,
+            flyer.scaling - FLYER_SCALING_SPEED
+          );
+        }
+        targetRotation = flyer.default.r;
+      }
+
+      // update pos
+      const distX = abs(targetPos[0] - flyer.pos[0]);
+      const distY = abs(targetPos[1] - flyer.pos[1]);
+      if (distX !== 0 || distY !== 0) {
+        // minimum speed
+        const speedX = max(distX * FLYER_MOVE_SPEED, 1);
+        const speedY = max(distY * FLYER_MOVE_SPEED, 1);
+        // going left vs right
+        if (flyer.pos[0] < targetPos[0]) {
+          flyer.pos[0] = min(targetPos[0], flyer.pos[0] + speedX);
+        } else {
+          flyer.pos[0] = max(targetPos[0], flyer.pos[0] - speedX);
+        }
+        // going down vs up
+        if (flyer.pos[1] < targetPos[1]) {
+          flyer.pos[1] = min(targetPos[1], flyer.pos[1] + speedY);
+        } else {
+          flyer.pos[1] = max(targetPos[1], flyer.pos[1] - speedY);
         }
       }
 
-      this.pieceBtns[i].render(); // render button frame
+      // update rotation
+      if (targetRotation > flyer.r) {
+        flyer.r = min(flyer.r + FLYER_ROTATE_SPEED, targetRotation);
+      } else if (targetRotation < flyer.r) {
+        flyer.r = max(flyer.r - FLYER_ROTATE_SPEED, targetRotation);
+      }
     }
   },
 
@@ -133,6 +188,7 @@ const PLAY_SCENE = {
         shape.renderData.size,
         shape.renderData.size
       );
+      ///// render seal
       pop(); // popMatrix(); // KA
     }
   },
@@ -169,6 +225,7 @@ const PLAY_SCENE = {
   },
 
   pieceBtnClicked: function (pieceIndex) {
-    print(pieceIndex);
+    this.selectedPieceIndex =
+      this.selectedPieceIndex !== pieceIndex ? pieceIndex : null;
   },
 };

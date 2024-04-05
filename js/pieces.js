@@ -13,7 +13,7 @@ function generatePiece(pieceIndex) {
   const randomNum = random(100);
   let shapesCountIndex;
   // 10%, 35%, 55%
-  if (randomNum < 10) shapesCountIndex = 0;
+  if (randomNum < 10 && PLAY_SCENE.turnsCount > 0) shapesCountIndex = 0;
   else if (randomNum < 10 + 35) shapesCountIndex = 1;
   else shapesCountIndex = 2;
   const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);

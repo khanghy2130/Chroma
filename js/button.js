@@ -42,7 +42,7 @@ class Btn {
 
     // draw button frame
     strokeWeight(this.glow * 10 + 1);
-    fill(255, this.glow * 130);
+    fill(255, this.glow * 110);
     stroke(LIGHT_COLOR);
     rect(this.x, this.y, this.w, this.h, 8);
   }

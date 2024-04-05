@@ -34,7 +34,7 @@ function draw() {
   SCENE_TRANSITION.update();
 }
 
-let touchCountdown = 0;
+// KA
 function touchEnded() {
   if (touchCountdown > 0) return;
   else touchCountdown = 5;

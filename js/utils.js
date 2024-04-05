@@ -5,7 +5,9 @@ const LIGHT_COLOR = 230;
 const GRID_COLOR = 150;
 const BUTTON_GLOW_SPEED = 0.05;
 const FLYER_UNSELECTED_SCALING = 0.8;
-const FLYER_SIZE_SPEED = 0.07;
+const FLYER_SCALING_SPEED = 0.05;
+const FLYER_MOVE_SPEED = 0.2;
+const FLYER_ROTATE_SPEED = 10;
 
 // GRID
 const SCALER = 42; // grid scale
@@ -47,6 +49,8 @@ const ALL_SQUARES = [];
 const ALL_TRIANGLES = [];
 let ALL_SHAPES;
 let scene = "START"; // START / PLAY / END
+
+let touchCountdown = 0;
 
 function getShapeColor(colorIndex, shadeIndex) {
   let c = SHAPES_COLORS[colorIndex][shadeIndex];
