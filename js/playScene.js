@@ -47,23 +47,33 @@ const PLAY_SCENE = {
     // generate 3 pieces
     for (let i = 0; i < 3; i++) {
       this.pieces[i] = generatePiece(i);
-      print(this.pieces[i]); //////
+    }
+
+    // spawn shapes on board
+    for (let i = 0; i < SHAPES_COLORS.length; i++) {
+      let randomShape = null;
+      // make sure to pick a shape without neighbor
+      while (randomShape === null) {
+        randomShape = getRandomItem(ALL_SHAPES);
+        for (let nb = 0; nb < randomShape.nShapes.length; nb++) {
+          if (
+            randomShape.nShapes[nb] &&
+            randomShape.nShapes[nb].renderData !== null
+          ) {
+            randomShape = null; // not this one
+            break;
+          }
+        }
+      }
+      randomShape.renderData = newRenderData(
+        shapeIsSquare(randomShape),
+        false,
+        i
+      );
     }
   },
 
-  render: function () {
-    background(BG_COLOR);
-
-    // render grid lines
-    stroke(GRID_COLOR);
-    strokeWeight(3);
-    for (let i = 0; i < GRID_LINES.length; i++) {
-      const l = GRID_LINES[i];
-      if (l === null) continue;
-      line(l[0][0], l[0][1], l[1][0], l[1][1]);
-    }
-
-    // render piece flyers & piece buttons
+  renderPieces: function () {
     for (let i = 0; i < 3; i++) {
       // render piece flyer
       push(); // pushMatrix(); // KA
@@ -107,6 +117,40 @@ const PLAY_SCENE = {
 
       this.pieceBtns[i].render(); // render button frame
     }
+  },
+
+  renderPlacedShapes: function () {
+    for (let i = 0; i < ALL_SHAPES.length; i++) {
+      const shape = ALL_SHAPES[i];
+      if (shape.renderData === null) continue;
+      push(); // pushMatrix(); // KA
+      translate(shape.centerPos[0], shape.centerPos[1]);
+      rotate(GRID_ORI[shape.shapeIndex] + shape.renderData.textureOri);
+      image(
+        shape.renderData.img,
+        0,
+        0,
+        shape.renderData.size,
+        shape.renderData.size
+      );
+      pop(); // popMatrix(); // KA
+    }
+  },
+
+  render: function () {
+    background(BG_COLOR);
+
+    // render grid lines
+    stroke(GRID_COLOR);
+    strokeWeight(3);
+    for (let i = 0; i < GRID_LINES.length; i++) {
+      const l = GRID_LINES[i];
+      if (l === null) continue;
+      line(l[0][0], l[0][1], l[1][0], l[1][1]);
+    }
+
+    this.renderPlacedShapes();
+    this.renderPieces();
 
     ///// render frame rate
     fill(255);
@@ -128,18 +172,3 @@ const PLAY_SCENE = {
     print(pieceIndex);
   },
 };
-
-// render shapes on grid only
-function renderShape(shape) {
-  push(); // pushMatrix(); // KA
-  translate(shape.centerPos[0], shape.centerPos[1]);
-  rotate(GRID_ORI[shape.shapeIndex] + shape.renderData.textureOri);
-  image(
-    shape.renderData.img,
-    0,
-    0,
-    shape.renderData.size,
-    shape.renderData.size
-  );
-  pop(); // popMatrix(); // KA
-}

@@ -88,6 +88,9 @@ function makeShapesAndLines(core, N_CORE, skippedShapeIndex, SP) {
     getLine(core.shapes[2], 1, 2),
     getLine(core.shapes[3], 0, 2),
   ];
+
+  // ALL SHAPES array
+  ALL_SHAPES = ALL_SQUARES.concat(ALL_TRIANGLES);
 }
 
 // also push line into GRID_LINES

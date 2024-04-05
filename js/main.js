@@ -3,7 +3,7 @@ function setup() {
 
   if (__skip__) {
     IMAGES_AMOUNT = 1;
-    START_SCENE.t = 221;
+    START_SCENE.t = 453;
     TEXTURE_LOADER.LOAD_SPEED = 5000;
   }
 
@@ -22,6 +22,7 @@ function setup() {
 }
 
 function draw() {
+  touchCountdown--;
   cursor(ARROW);
   if (scene === "PLAY") {
     PLAY_SCENE.render();
@@ -33,7 +34,11 @@ function draw() {
   SCENE_TRANSITION.update();
 }
 
-function mouseClicked() {
+let touchCountdown = 0;
+function touchEnded() {
+  if (touchCountdown > 0) return;
+  else touchCountdown = 5;
+
   if (scene === "PLAY") {
     PLAY_SCENE.mouseClicked();
   } else if (scene === "START") {
