@@ -16,7 +16,7 @@ function generatePiece(pieceIndex) {
   if (randomNum < 10 && PLAY_SCENE.turnsCount > 0) shapesCountIndex = 0;
   else if (randomNum < 10 + 35) shapesCountIndex = 1;
   else shapesCountIndex = 2;
-  const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);
+  const type = "STS"; // getRandomItem(PIECE_TYPES[shapesCountIndex]);
 
   const btnCenterPos = [
     PLAY_SCENE.pieceBtns[pieceIndex].x,
@@ -25,7 +25,7 @@ function generatePiece(pieceIndex) {
   return {
     type: type,
     flyer: generatePieceFlyer(type, btnCenterPos),
-    placeables: null,
+    placeables: [],
   };
 }
 
@@ -34,11 +34,8 @@ function generatePiece(pieceIndex) {
 function generatePieceFlyer(type, btnCenterPos) {
   const flyer = {
     fShapes: [],
-    default: {
-      // could be modified by type
-      pos: btnCenterPos,
-      r: 0,
-    },
+    // could be modified by type
+    default: { pos: btnCenterPos, r: 0 },
     pos: null,
     r: 0,
     scaling: 0,
@@ -253,6 +250,125 @@ function generatePieceFlyer(type, btnCenterPos) {
   flyer.pos = flyer.default.pos.slice(0);
   flyer.r = flyer.default.r;
   return flyer;
+}
+
+// Placeable: { pos, r, shapes[] (same order as fShapes) }
+////// r: (center ones default, edge ones default + direction)
+function generatePlaceables() {
+  // check out of space if placeableGenIndex is 3
+  if (PLAY_SCENE.placeableGenIndex === 3) {
+    let outOfSpace = true;
+    for (let i = 0; i < PLAY_SCENE.pieces.length; i++) {
+      if (PLAY_SCENE.pieces[i].placeables.length > 0) {
+        outOfSpace = false;
+        break;
+      }
+    }
+    if (outOfSpace) {
+      print("OUT OF SPACE"); ////
+    }
+    PLAY_SCENE.placeableGenIndex++;
+  }
+  if (PLAY_SCENE.placeableGenIndex >= 3) return;
+
+  /////// set index to 0 AFTER done adding score. during which cant select piece
+
+  const piece = PLAY_SCENE.pieces[PLAY_SCENE.placeableGenIndex];
+  const placeables = [];
+
+  switch (piece.type) {
+    case "T":
+      for (let i = 0; i < ALL_TRIANGLES.length; i++) {
+        const t = ALL_TRIANGLES[i];
+        /////// check loner seal later
+        if (t.renderData === null) {
+          placeables.push({
+            pos: t.centerPos,
+            r: GRID_ORI[t.shapeIndex],
+            shapes: [t],
+          });
+        }
+      }
+      break;
+    case "S":
+      for (let i = 0; i < ALL_SQUARES.length; i++) {
+        const s = ALL_SQUARES[i];
+        /////// check loner seal later
+        if (s.renderData === null) {
+          placeables.push({
+            pos: s.centerPos,
+            r: GRID_ORI[s.shapeIndex],
+            shapes: [s],
+          });
+        }
+      }
+      break;
+
+    case "TT":
+      for (let i = 0; i < ALL_TRIANGLES.length; i++) {
+        const t = ALL_TRIANGLES[i];
+        if (
+          t.renderData === null &&
+          t.nShapes[0] &&
+          t.nShapes[0].renderData === null
+        ) {
+          const ORI = [0, 180, 270, 90];
+          placeables.push({
+            pos: t.centerPos,
+            r: ORI[t.shapeIndex],
+            shapes: [t, t.nShapes[0]],
+          });
+        }
+      }
+      break;
+    case "ST":
+      for (let i = 0; i < ALL_SQUARES.length; i++) {
+        const s = ALL_SQUARES[i];
+        if (s.renderData === null) {
+          // check the 4 neighbor triangles
+          for (let nb = 0; nb < s.nShapes.length; nb++) {
+            if (s.nShapes[nb] && s.nShapes[nb].renderData === null) {
+              const midPos = [
+                (s.points[nsi(nb)][0] + s.points[nsi(1 + nb)][0]) / 2,
+                (s.points[nsi(nb)][1] + s.points[nsi(1 + nb)][1]) / 2,
+              ];
+              const r = s.shapeIndex === 5 ? 120 : 90;
+              placeables.push({
+                pos: midPos,
+                r: nb * 90 - r,
+                shapes: [s, s.nShapes[nb]],
+              });
+            }
+          }
+        }
+      }
+      break;
+
+    case "STS":
+      for (let i = 0; i < ALL_TRIANGLES.length; i++) {
+        const t = ALL_TRIANGLES[i];
+        const s1 = t.nShapes[2];
+        const s2 = t.nShapes[1];
+        if (
+          t.renderData === null &&
+          s1 &&
+          s1.renderData === null &&
+          s2 &&
+          s2.renderData === null
+        ) {
+          const ORI = [180, 0, 90, 270];
+          placeables.push({
+            pos: t.centerPos,
+            r: ORI[t.shapeIndex],
+            shapes: [t, s1, s2],
+          });
+        }
+      }
+      break;
+  }
+
+  piece.placeables = placeables;
+  PLAY_SCENE.placeableGenIndex++;
 }
 
 /*

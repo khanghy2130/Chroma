@@ -4,6 +4,7 @@ const BG_COLOR = 30;
 const LIGHT_COLOR = 230;
 const GRID_COLOR = 150;
 const BUTTON_GLOW_SPEED = 0.05;
+
 const FLYER_UNSELECTED_SCALING = 0.8;
 const FLYER_SCALING_SPEED = 0.05;
 const FLYER_MOVE_SPEED = 0.2;
@@ -13,6 +14,7 @@ const FLYER_ROTATE_SPEED = 10;
 const SCALER = 42; // grid scale
 const SQUARE_SIZE = 85;
 const TRIANGLE_SIZE = 75;
+const PLACEABLE_DIAMETER = 20;
 const CORES = [];
 const GRID_LINES = [];
 const PLUS_DOTS = [];

@@ -1,14 +1,18 @@
 const PLAY_SCENE = {
   activePlusDot: null,
 
+  // Piece: {type, flyer, placeables}
   pieces: [],
   pieceBtns: [],
   selectedPieceIndex: null,
+  hoveredPlaceable: null,
 
   turnsCount: 0,
+  placeableGenIndex: 0, // 3 would be done
 
   initializeGame: function () {
     this.turnsCount = 0;
+    this.placeableGenIndex = 0;
 
     // make piece buttons
     if (this.pieceBtns.length === 0) {
@@ -120,9 +124,9 @@ const PLAY_SCENE = {
         }
 
         // is hovered on placeable?
-        if (false) {
-          //// targetPos = placeable pos
-          //// targetRotation = placeable r
+        if (this.hoveredPlaceable !== null) {
+          targetPos = this.hoveredPlaceable.pos;
+          targetRotation = this.hoveredPlaceable.r;
         } else {
           targetPos = [mouseX, mouseY];
         }
@@ -174,6 +178,23 @@ const PLAY_SCENE = {
     }
   },
 
+  renderPlaceables: function () {
+    if (this.selectedPieceIndex === null) return;
+    const placeables = this.pieces[this.selectedPieceIndex].placeables;
+    for (let i = 0; i < placeables.length; i++) {
+      const placeable = placeables[i];
+      // check hover
+      if (
+        this.hoveredPlaceable === null &&
+        dist(mouseX, mouseY, placeable.pos[0], placeable.pos[1]) <
+          PLACEABLE_DIAMETER * 1 // hover range
+      ) {
+        this.hoveredPlaceable = placeable;
+        break;
+      }
+    }
+  },
+
   renderPlacedShapes: function () {
     for (let i = 0; i < ALL_SHAPES.length; i++) {
       const shape = ALL_SHAPES[i];
@@ -194,7 +215,12 @@ const PLAY_SCENE = {
   },
 
   render: function () {
+    this.hoveredPlaceable = null; // reset
+    generatePlaceables();
+
     background(BG_COLOR);
+    this.renderPlaceables();
+    this.renderPlacedShapes();
 
     // render grid lines
     stroke(GRID_COLOR);
@@ -205,7 +231,6 @@ const PLAY_SCENE = {
       line(l[0][0], l[0][1], l[1][0], l[1][1]);
     }
 
-    this.renderPlacedShapes();
     this.renderPieces();
 
     ///// render frame rate
@@ -217,6 +242,20 @@ const PLAY_SCENE = {
 
   mouseClicked: function () {
     ///// block input here
+
+    // placing a piece
+    if (this.hoveredPlaceable !== null) {
+      /// test directly apply to grid data
+      const flyer = this.pieces[this.selectedPieceIndex].flyer;
+      for (let i = 0; i < flyer.fShapes.length; i++) {
+        const shape = this.hoveredPlaceable.shapes[i];
+        const renderData = flyer.fShapes[i].renderData;
+        shape.renderData = renderData;
+        renderData.textureOri +=
+          flyer.r + flyer.fShapes[i].r - GRID_ORI[shape.shapeIndex];
+      }
+      return;
+    }
 
     // piece button clicked
     for (let i = 0; i < this.pieceBtns.length; i++) {
