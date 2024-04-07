@@ -126,6 +126,12 @@ const PLAY_SCENE = {
         // is hovered on placeable?
         if (this.hoveredPlaceable !== null) {
           targetPos = this.hoveredPlaceable.pos;
+          // rotation shortcut
+          if (abs(this.hoveredPlaceable.r - flyer.r) > 180) {
+            if (this.hoveredPlaceable.r > flyer.r) {
+              flyer.r += 360;
+            } else flyer.r -= 360;
+          }
           targetRotation = this.hoveredPlaceable.r;
         } else {
           targetPos = [mouseX, mouseY];
@@ -178,7 +184,7 @@ const PLAY_SCENE = {
     }
   },
 
-  renderPlaceables: function () {
+  checkHoverPlaceables: function () {
     if (this.selectedPieceIndex === null) return;
     const placeables = this.pieces[this.selectedPieceIndex].placeables;
     for (let i = 0; i < placeables.length; i++) {
@@ -215,11 +221,13 @@ const PLAY_SCENE = {
   },
 
   render: function () {
-    this.hoveredPlaceable = null; // reset
+    // reset
+    this.hoveredPlaceable = null;
+
     generatePlaceables();
 
     background(BG_COLOR);
-    this.renderPlaceables();
+    this.checkHoverPlaceables();
     this.renderPlacedShapes();
 
     // render grid lines
@@ -233,6 +241,21 @@ const PLAY_SCENE = {
 
     this.renderPieces();
 
+    // render red dots
+    if (this.selectedPieceIndex !== null) {
+      stroke(255, 255, 0);
+      strokeWeight(10);
+      if (this.hoveredPlaceable) {
+        point(this.hoveredPlaceable.pos[0], this.hoveredPlaceable.pos[1]);
+      } else {
+        const placeables = this.pieces[this.selectedPieceIndex].placeables;
+        for (let i = 0; i < placeables.length; i++) {
+          const placeable = placeables[i];
+          point(placeable.pos[0], placeable.pos[1]);
+        }
+      }
+    }
+
     ///// render frame rate
     fill(255);
     noStroke();
@@ -241,19 +264,28 @@ const PLAY_SCENE = {
   },
 
   mouseClicked: function () {
-    ///// block input here
-
     // placing a piece
     if (this.hoveredPlaceable !== null) {
       /// test directly apply to grid data
       const flyer = this.pieces[this.selectedPieceIndex].flyer;
+      // apply renderData to real shapes
       for (let i = 0; i < flyer.fShapes.length; i++) {
         const shape = this.hoveredPlaceable.shapes[i];
         const renderData = flyer.fShapes[i].renderData;
         shape.renderData = renderData;
         renderData.textureOri +=
-          flyer.r + flyer.fShapes[i].r - GRID_ORI[shape.shapeIndex];
+          this.hoveredPlaceable.r +
+          flyer.fShapes[i].r -
+          GRID_ORI[shape.shapeIndex];
       }
+      this.pieces[this.selectedPieceIndex] = generatePiece(
+        this.selectedPieceIndex
+      );
+      this.selectedPieceIndex = null;
+      this.placeableGenIndex = 0; // trigger recalculate
+      this.turnsCount++;
+      this.clearShapes();
+
       return;
     }
 
@@ -264,7 +296,53 @@ const PLAY_SCENE = {
   },
 
   pieceBtnClicked: function (pieceIndex) {
+    // cancel if still calculating placeables
+    if (this.placeableGenIndex < 4 || this.outOfSpace) return;
     this.selectedPieceIndex =
       this.selectedPieceIndex !== pieceIndex ? pieceIndex : null;
   },
+
+  // clear all same color 4+ shapes group(s). add to animation
+  clearShapes: function () {
+    const checkedShapes = {};
+    const groups = [];
+    for (let i = 0; i < ALL_SHAPES.length; i++) {
+      checkShape(ALL_SHAPES[i], checkedShapes, groups, [], true);
+    }
+    for (let i = 0; i < groups.length; i++) {
+      const group = groups[i];
+      if (group.length >= 4) {
+        for (let j = 0; j < group.length; j++) {
+          const shape = group[j];
+          shape.renderData = null;
+        }
+      }
+    }
+  },
 };
+
+function checkShape(
+  shape,
+  checkedShapes,
+  groups,
+  currentGroup,
+  doesAddToGroups
+) {
+  // empty or already checked
+  if (shape.renderData === null || checkedShapes[shape.shapeID]) return;
+
+  checkedShapes[shape.shapeID] = true; // mark checked
+  currentGroup.push(shape); // add self to group
+  if (doesAddToGroups) groups.push(currentGroup);
+  for (let nb = 0; nb < shape.nShapes.length; nb++) {
+    const nShape = shape.nShapes[nb];
+    // jump to that shape if same color
+    if (
+      nShape &&
+      nShape.renderData !== null &&
+      nShape.renderData.colorIndex === shape.renderData.colorIndex
+    ) {
+      checkShape(nShape, checkedShapes, groups, currentGroup);
+    }
+  }
+}

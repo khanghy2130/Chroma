@@ -7,6 +7,7 @@ CORE {
 }
 
 SHAPE: null | {
+  shapeID: string,
   shapeIndex: (index in core.shapes)
   nShapes[3 | 4] (clockwise order) (neighbors)
   points[3 | 4]
@@ -26,6 +27,7 @@ const GRID_ORI = [0, 60, 30, 90, 60, 30];
 
 // make all shapes for a core
 // nCores is neighbor cores
+let _shapeID = 0;
 function makeShapesAndLines(core, N_CORE, skippedShapeIndex, SP) {
   const cores = N_CORE.map((index) => {
     if (index === null) return null;
@@ -40,7 +42,9 @@ function makeShapesAndLines(core, N_CORE, skippedShapeIndex, SP) {
       return null;
     }
 
+    _shapeID++;
     const shape = {
+      shapeID: _shapeID,
       shapeIndex: shapeIndex,
       points: [],
       renderData: null,

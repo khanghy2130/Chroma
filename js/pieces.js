@@ -12,11 +12,11 @@ function generatePiece(pieceIndex) {
   // determine type
   const randomNum = random(100);
   let shapesCountIndex;
-  // 10%, 35%, 55%
+  // 10%, 50%, 40%
   if (randomNum < 10 && PLAY_SCENE.turnsCount > 0) shapesCountIndex = 0;
-  else if (randomNum < 10 + 35) shapesCountIndex = 1;
+  else if (randomNum < 10 + 50) shapesCountIndex = 1;
   else shapesCountIndex = 2;
-  const type = "STS"; // getRandomItem(PIECE_TYPES[shapesCountIndex]);
+  const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);
 
   const btnCenterPos = [
     PLAY_SCENE.pieceBtns[pieceIndex].x,
@@ -253,7 +253,6 @@ function generatePieceFlyer(type, btnCenterPos) {
 }
 
 // Placeable: { pos, r, shapes[] (same order as fShapes) }
-////// r: (center ones default, edge ones default + direction)
 function generatePlaceables() {
   // check out of space if placeableGenIndex is 3
   if (PLAY_SCENE.placeableGenIndex === 3) {
@@ -265,13 +264,12 @@ function generatePlaceables() {
       }
     }
     if (outOfSpace) {
-      print("OUT OF SPACE"); ////
+      PLAY_SCENE.outOfSpace = outOfSpace;
+      //// trigger lost
     }
     PLAY_SCENE.placeableGenIndex++;
   }
   if (PLAY_SCENE.placeableGenIndex >= 3) return;
-
-  /////// set index to 0 AFTER done adding score. during which cant select piece
 
   const piece = PLAY_SCENE.pieces[PLAY_SCENE.placeableGenIndex];
   const placeables = [];
@@ -280,7 +278,7 @@ function generatePlaceables() {
     case "T":
       for (let i = 0; i < ALL_TRIANGLES.length; i++) {
         const t = ALL_TRIANGLES[i];
-        /////// check loner seal later
+        //// check loner seal later
         if (t.renderData === null) {
           placeables.push({
             pos: t.centerPos,
@@ -293,7 +291,7 @@ function generatePlaceables() {
     case "S":
       for (let i = 0; i < ALL_SQUARES.length; i++) {
         const s = ALL_SQUARES[i];
-        /////// check loner seal later
+        //// check loner seal later
         if (s.renderData === null) {
           placeables.push({
             pos: s.centerPos,
@@ -344,6 +342,108 @@ function generatePlaceables() {
       }
       break;
 
+    case "TST-":
+      for (let i = 0; i < ALL_SQUARES.length; i++) {
+        const s = ALL_SQUARES[i];
+        if (s.renderData === null) {
+          // check the 4 neighbor triangles
+          for (let nb = 0; nb < s.nShapes.length; nb++) {
+            if (s.nShapes[nb] && s.nShapes[nb].renderData === null) {
+              const otherT = s.nShapes[nsi(nb + 2)];
+              if (otherT && otherT.renderData === null) {
+                const midPos = [
+                  (s.points[nsi(nb)][0] + s.points[nsi(1 + nb)][0]) / 2,
+                  (s.points[nsi(nb)][1] + s.points[nsi(1 + nb)][1]) / 2,
+                ];
+                const r = s.shapeIndex === 5 ? 120 : 90;
+                placeables.push({
+                  pos: midPos,
+                  r: nb * 90 - r,
+                  shapes: [s, s.nShapes[nb], otherT],
+                });
+              }
+            }
+          }
+        }
+      }
+      break;
+    case "TST^":
+      for (let i = 0; i < ALL_SQUARES.length; i++) {
+        const s = ALL_SQUARES[i];
+        if (s.renderData === null) {
+          // check the 4 neighbor triangles
+          for (let nb = 0; nb < s.nShapes.length; nb++) {
+            if (s.nShapes[nb] && s.nShapes[nb].renderData === null) {
+              const otherT = s.nShapes[nsi(nb + 1)];
+              if (otherT && otherT.renderData === null) {
+                const midPos = [
+                  (s.points[nsi(nb)][0] + s.points[nsi(1 + nb)][0]) / 2,
+                  (s.points[nsi(nb)][1] + s.points[nsi(1 + nb)][1]) / 2,
+                ];
+                const r = s.shapeIndex === 5 ? 120 : 90;
+                placeables.push({
+                  pos: midPos,
+                  r: nb * 90 - r,
+                  shapes: [s, s.nShapes[nb], otherT],
+                });
+              }
+            }
+          }
+        }
+      }
+      break;
+
+    case "STT":
+      for (let i = 0; i < ALL_SQUARES.length; i++) {
+        const s = ALL_SQUARES[i];
+        if (s.shapeIndex === 4 && s.renderData === null) {
+          // check the 4 neighbor triangles
+          for (let nb = 0; nb < s.nShapes.length; nb++) {
+            const t1 = s.nShapes[nb];
+            if (t1 && t1.renderData === null) {
+              const t2 = t1.nShapes[0];
+              if (t2 && t2.renderData === null) {
+                const midPos = [
+                  (s.points[nsi(nb)][0] + s.points[nsi(1 + nb)][0]) / 2,
+                  (s.points[nsi(nb)][1] + s.points[nsi(1 + nb)][1]) / 2,
+                ];
+                placeables.push({
+                  pos: midPos,
+                  r: nb * 90 - 180,
+                  shapes: [s, t1, t2],
+                });
+              }
+            }
+          }
+        }
+      }
+      break;
+    case "TTS":
+      for (let i = 0; i < ALL_SQUARES.length; i++) {
+        const s = ALL_SQUARES[i];
+        if (s.shapeIndex === 5 && s.renderData === null) {
+          // check the 4 neighbor triangles
+          for (let nb = 0; nb < s.nShapes.length; nb++) {
+            const t1 = s.nShapes[nb];
+            if (t1 && t1.renderData === null) {
+              const t2 = t1.nShapes[0];
+              if (t2 && t2.renderData === null) {
+                const midPos = [
+                  (s.points[nsi(nb)][0] + s.points[nsi(1 + nb)][0]) / 2,
+                  (s.points[nsi(nb)][1] + s.points[nsi(1 + nb)][1]) / 2,
+                ];
+                placeables.push({
+                  pos: midPos,
+                  r: nb * 90 + 90,
+                  shapes: [t2, t1, s],
+                });
+              }
+            }
+          }
+        }
+      }
+      break;
+
     case "STS":
       for (let i = 0; i < ALL_TRIANGLES.length; i++) {
         const t = ALL_TRIANGLES[i];
@@ -370,41 +470,3 @@ function generatePlaceables() {
   piece.placeables = placeables;
   PLAY_SCENE.placeableGenIndex++;
 }
-
-/*
-  T: {
-    centerShapeIndices: [0,1,2,3], // ALL TRIANGLES
-  }
-  S: {
-    centerShapeIndices: [4,5], // ALL SQUARES
-  }
-  
-  TT: {
-    centerShapeIndices: [0,1,2,3], // ALL TRIANGLES
-    REQUIRE THE NEIGHBOR TRIANGLE
-  }
-  TS: {
-    centerShapeIndices: [4,5], // ALL SQUARES
-    EDGE: CHECK ALL 4 NEIGHBOR TRIANGLES
-  }
-
-  STT: {
-    centerShapeIndices: [4], // LEFT SQUARE
-    EDGE: CHECK ALL 4 NEIGHBOR TRIANGLES
-  }
-  TTS: {
-    centerShapeIndices: [5], // RIGHT SQUARE
-    EDGE: CHECK ALL 4 NEIGHBOR TRIANGLES
-  }
-
-  STS: {
-    centerShapeIndices: [0,1,2,3], // ALL TRIANGLES
-  }
-  TST-: {
-    centerShapeIndices: [4,5], // ALL SQUARES
-  }
-  TST^: {
-    centerShapeIndices: [4,5], // ALL SQUARES
-  }
-
-*/
