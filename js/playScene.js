@@ -10,6 +10,7 @@ const PLAY_SCENE = {
   turnsCount: 0,
   placeableGenIndex: 0, // 3 would be done
 
+  pendingCheckClear: false,
   // {shape, progress(0 to 1)}
   placementFlashers: [],
   // {shape, progress(0 to 1), textProgress(0 to 1)}
@@ -19,7 +20,9 @@ const PLAY_SCENE = {
     this.turnsCount = 0;
     this.placeableGenIndex = 0;
     this.selectedPieceIndex = null;
+    this.pendingCheckClear = false;
     this.placementFlashers = [];
+    this.clearFlasers = [];
 
     // make piece buttons
     if (this.pieceBtns.length === 0) {
@@ -228,9 +231,10 @@ const PLAY_SCENE = {
   },
 
   renderPlacementFlashers: function () {
+    noStroke();
     for (let i = this.placementFlashers.length - 1; i >= 0; i--) {
       const fl = this.placementFlashers[i];
-      fl.progress += 0.08;
+      fl.progress = min(1, fl.progress + FLASHER_SPEED);
       fill(255, sin(fl.progress * 180) * 255);
       beginShape();
       for (let v = 0; v < fl.shape.points.length; v++) {
@@ -238,6 +242,39 @@ const PLAY_SCENE = {
       }
       endShape(CLOSE);
       if (fl.progress >= 1) this.placementFlashers.splice(i, 1);
+    }
+  },
+
+  renderClearFlashers: function () {
+    // set up clearing after placing animation
+    if (this.pendingCheckClear && this.placementFlashers.length === 0) {
+      this.pendingCheckClear = false;
+      this.clearShapes();
+    }
+    noStroke();
+    textSize(20);
+    for (let i = this.clearFlasers.length - 1; i >= 0; i--) {
+      const fl = this.clearFlasers[i];
+      if (fl.delay-- > 0) continue;
+      // after halfway
+      if (fl.progress >= 0.5) {
+        fl.shape.renderData = null; // actually clear shape (repeatedly)
+        if (fl.progress >= 1) fl.textProgress += 0.03; // text duration
+        fill(LIGHT_COLOR, min(255, (1 - fl.textProgress) * 1000));
+        text("+100", fl.shape.centerPos[0], fl.shape.centerPos[1]);
+        if (fl.textProgress >= 1) this.clearFlasers.splice(i, 1);
+      }
+      // flasher cover
+      if (fl.progress < 1) {
+        fl.progress = min(1, fl.progress + FLASHER_SPEED);
+        //// custom mult color here
+        fill(255, sin(fl.progress * 180) * 255);
+        beginShape();
+        for (let v = 0; v < fl.shape.points.length; v++) {
+          vertex(fl.shape.points[v][0], fl.shape.points[v][1]);
+        }
+        endShape(CLOSE);
+      }
     }
   },
 
@@ -277,6 +314,8 @@ const PLAY_SCENE = {
       }
     }
 
+    this.renderClearFlashers();
+
     ///// render frame rate
     fill(255);
     noStroke();
@@ -285,7 +324,7 @@ const PLAY_SCENE = {
   },
 
   mouseClicked: function () {
-    // placing a piece
+    // placing a piece (hovering on placeable & no more flashers)
     if (this.hoveredPlaceable !== null) {
       const flyer = this.pieces[this.selectedPieceIndex].flyer;
       // apply renderData to real shapes
@@ -308,8 +347,7 @@ const PLAY_SCENE = {
       this.selectedPieceIndex = null;
       this.placeableGenIndex = 0; // trigger recalculate
       this.turnsCount++;
-      this.clearShapes(); //// do this after animation
-
+      this.pendingCheckClear = true;
       return;
     }
 
@@ -326,21 +364,28 @@ const PLAY_SCENE = {
       this.selectedPieceIndex !== pieceIndex ? pieceIndex : null;
   },
 
-  // clear all same color 4+ shapes group(s). add to animation
   clearShapes: function () {
     const checkedShapes = {};
     const groups = [];
     for (let i = 0; i < ALL_SHAPES.length; i++) {
       checkShape(ALL_SHAPES[i], checkedShapes, groups, [], true);
     }
+
+    let clearedShapes = [];
     for (let i = 0; i < groups.length; i++) {
       const group = groups[i];
-      if (group.length >= 4) {
-        for (let j = 0; j < group.length; j++) {
-          const shape = group[j];
-          shape.renderData = null;
-        }
-      }
+      if (group.length >= 4) clearedShapes = clearedShapes.concat(group);
+    }
+    clearedShapes.sort(function (shapeA, shapeB) {
+      return shapeA.centerPos[0] - shapeB.centerPos[0];
+    });
+    for (let i = 0; i < clearedShapes.length; i++) {
+      this.clearFlasers.push({
+        delay: i * CLEAR_DELAY,
+        shape: clearedShapes[i],
+        progress: 0,
+        textProgress: 0,
+      });
     }
   },
 };

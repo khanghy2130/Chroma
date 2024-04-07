@@ -10,6 +10,9 @@ const FLYER_SCALING_SPEED = 0.05;
 const FLYER_MOVE_SPEED = 0.2;
 const FLYER_ROTATE_SPEED = 10;
 
+const CLEAR_DELAY = 15;
+const FLASHER_SPEED = 0.06;
+
 // GRID
 const SCALER = 42; // grid scale
 const SQUARE_SIZE = 85;

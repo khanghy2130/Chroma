@@ -18,6 +18,16 @@ function generatePiece(pieceIndex) {
   else shapesCountIndex = 2;
   const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);
 
+  // check if already have this type (unless it's 1 shape)
+  if (shapesCountIndex !== 0) {
+    for (let i = 0; i < PLAY_SCENE.pieces.length; i++) {
+      if (i === pieceIndex) continue;
+      if (PLAY_SCENE.pieces[i].type === type) {
+        return generatePiece(pieceIndex); // reroll
+      }
+    }
+  }
+
   const btnCenterPos = [
     PLAY_SCENE.pieceBtns[pieceIndex].x,
     PLAY_SCENE.pieceBtns[pieceIndex].y,
@@ -254,6 +264,12 @@ function generatePieceFlyer(type, btnCenterPos) {
 
 // Placeable: { pos, r, shapes[] (same order as fShapes) }
 function generatePlaceables() {
+  // don't generate if there are still flashers
+  if (
+    PLAY_SCENE.placementFlashers.length > 0 ||
+    PLAY_SCENE.clearFlasers.length > 0
+  )
+    return;
   // check out of space if placeableGenIndex is 3
   if (PLAY_SCENE.placeableGenIndex === 3) {
     let outOfSpace = true;
