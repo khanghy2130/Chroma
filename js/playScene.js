@@ -10,9 +10,16 @@ const PLAY_SCENE = {
   turnsCount: 0,
   placeableGenIndex: 0, // 3 would be done
 
+  // {shape, progress(0 to 1)}
+  placementFlashers: [],
+  // {shape, progress(0 to 1), textProgress(0 to 1)}
+  clearFlasers: [],
+
   initializeGame: function () {
     this.turnsCount = 0;
     this.placeableGenIndex = 0;
+    this.selectedPieceIndex = null;
+    this.placementFlashers = [];
 
     // make piece buttons
     if (this.pieceBtns.length === 0) {
@@ -220,19 +227,33 @@ const PLAY_SCENE = {
     }
   },
 
+  renderPlacementFlashers: function () {
+    for (let i = this.placementFlashers.length - 1; i >= 0; i--) {
+      const fl = this.placementFlashers[i];
+      fl.progress += 0.08;
+      fill(255, sin(fl.progress * 180) * 255);
+      beginShape();
+      for (let v = 0; v < fl.shape.points.length; v++) {
+        vertex(fl.shape.points[v][0], fl.shape.points[v][1]);
+      }
+      endShape(CLOSE);
+      if (fl.progress >= 1) this.placementFlashers.splice(i, 1);
+    }
+  },
+
   render: function () {
     // reset
     this.hoveredPlaceable = null;
 
-    generatePlaceables();
-
     background(BG_COLOR);
+    generatePlaceables();
     this.checkHoverPlaceables();
+    this.renderPlacementFlashers();
     this.renderPlacedShapes();
 
     // render grid lines
     stroke(GRID_COLOR);
-    strokeWeight(3);
+    strokeWeight(2);
     for (let i = 0; i < GRID_LINES.length; i++) {
       const l = GRID_LINES[i];
       if (l === null) continue;
@@ -266,7 +287,6 @@ const PLAY_SCENE = {
   mouseClicked: function () {
     // placing a piece
     if (this.hoveredPlaceable !== null) {
-      /// test directly apply to grid data
       const flyer = this.pieces[this.selectedPieceIndex].flyer;
       // apply renderData to real shapes
       for (let i = 0; i < flyer.fShapes.length; i++) {
@@ -277,6 +297,10 @@ const PLAY_SCENE = {
           this.hoveredPlaceable.r +
           flyer.fShapes[i].r -
           GRID_ORI[shape.shapeIndex];
+        this.placementFlashers.push({
+          shape: shape,
+          progress: 0,
+        });
       }
       this.pieces[this.selectedPieceIndex] = generatePiece(
         this.selectedPieceIndex
@@ -284,7 +308,7 @@ const PLAY_SCENE = {
       this.selectedPieceIndex = null;
       this.placeableGenIndex = 0; // trigger recalculate
       this.turnsCount++;
-      this.clearShapes();
+      this.clearShapes(); //// do this after animation
 
       return;
     }
