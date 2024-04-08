@@ -6,23 +6,29 @@ const PLAY_SCENE = {
   pieceBtns: [],
   selectedPieceIndex: null,
   hoveredPlaceable: null,
-
-  turnsCount: 0,
   placeableGenIndex: 0, // 3 would be done
 
   pendingCheckClear: false,
   // {shape, progress(0 to 1)}
   placementFlashers: [],
-  // {shape, progress(0 to 1), textProgress(0 to 1)}
+  // {shape, progress(0 to 1), hasCleared}
   clearFlasers: [],
+  numFlashers: [], // { pos, addedScore, progress(0 to 1)}
 
   initializeGame: function () {
-    this.turnsCount = 0;
+    totalScore = 0;
+    multiplier = 2.0;
+    adder = 0;
+    temporaryAdder = 0;
+    scoreCheckIndex = 0;
+    turnsCount = 0;
+
     this.placeableGenIndex = 0;
     this.selectedPieceIndex = null;
     this.pendingCheckClear = false;
     this.placementFlashers = [];
     this.clearFlasers = [];
+    this.numFlashers = [];
 
     // make piece buttons
     if (this.pieceBtns.length === 0) {
@@ -251,19 +257,10 @@ const PLAY_SCENE = {
       this.pendingCheckClear = false;
       this.clearShapes();
     }
-    noStroke();
-    textSize(20);
     for (let i = this.clearFlasers.length - 1; i >= 0; i--) {
       const fl = this.clearFlasers[i];
       if (fl.delay-- > 0) continue;
-      // after halfway
-      if (fl.progress >= 0.5) {
-        fl.shape.renderData = null; // actually clear shape (repeatedly)
-        if (fl.progress >= 1) fl.textProgress += 0.03; // text duration
-        fill(LIGHT_COLOR, min(255, (1 - fl.textProgress) * 1000));
-        text("+100", fl.shape.centerPos[0], fl.shape.centerPos[1]);
-        if (fl.textProgress >= 1) this.clearFlasers.splice(i, 1);
-      }
+
       // flasher cover
       if (fl.progress < 1) {
         fl.progress = min(1, fl.progress + FLASHER_SPEED);
@@ -274,8 +271,74 @@ const PLAY_SCENE = {
           vertex(fl.shape.points[v][0], fl.shape.points[v][1]);
         }
         endShape(CLOSE);
+        if (fl.progress >= 1) this.clearFlasers.splice(i, 1);
+      }
+
+      // actually clear & set up numFlashers
+      if (!fl.hasCleared && fl.progress >= 0.5) {
+        fl.hasCleared = true;
+        fl.shape.renderData = null;
+        /// clear sound here
+        this.numFlashers.push({
+          pos: fl.shape.centerPos,
+          addedScore: "+" + 100, /// display score
+          progress: 0,
+        });
       }
     }
+  },
+
+  renderNumFlashers: function () {
+    textSize(18);
+    for (let i = this.numFlashers.length - 1; i >= 0; i--) {
+      const fl = this.numFlashers[i];
+      fl.progress += 0.018; // text duration
+      fill(LIGHT_COLOR, min(255, (1 - fl.progress) * 1000));
+      text(fl.addedScore, fl.pos[0], fl.pos[1]);
+      if (fl.progress >= 1) this.numFlashers.splice(i, 1);
+    }
+  },
+
+  renderTotalScore: function () {
+    textSize(40);
+    fill(DARK_COLOR);
+    rect(75, 55, 110, 50, 10);
+    fill(LIGHT_COLOR);
+    text(totalScore + 1234, 75, 57);
+  },
+
+  renderScoreCheck: function () {
+    fill(DARK_COLOR);
+    rect(525, 58, 120, 75, 10);
+    textSize(40);
+    fill(LIGHT_COLOR);
+    text(SCORE_CHECK_AMOUNTS[scoreCheckIndex], 525, 50);
+    textSize(20);
+    fill(LIGHT_COLOR); /// flash when <2 left
+    text(10 - (turnsCount % 10) + " left", 525, 80);
+  },
+
+  renderMultiplier: function () {
+    const spinTime = frameCount * (false ? 10 : 1); ///
+    fill("lime"); ///
+    arc(70, 400, 85, 85, spinTime, spinTime + 50);
+    arc(70, 400, 85, 85, spinTime + 180, spinTime + 230);
+    fill(DARK_COLOR);
+    ellipse(70, 400, 80, 80);
+    fill("lime"); ///
+    text("x" + multiplier.toFixed(1), 70, 400);
+  },
+
+  renderAdder: function () {
+    const spinSpeed = 1.0; /// scale with temporary adder value
+    const spinTime = -frameCount * spinSpeed;
+    fill(LIGHT_COLOR);
+    arc(530, 400, 85, 85, spinTime - 50, spinTime);
+    arc(530, 400, 85, 85, spinTime - 230, spinTime - 180);
+    fill(DARK_COLOR);
+    ellipse(530, 400, 80, 80);
+    fill(LIGHT_COLOR);
+    text("+" + adder, 530, 400);
   },
 
   render: function () {
@@ -287,6 +350,13 @@ const PLAY_SCENE = {
     this.checkHoverPlaceables();
     this.renderPlacementFlashers();
     this.renderPlacedShapes();
+
+    noStroke();
+    this.renderTotalScore();
+    this.renderScoreCheck();
+    textSize(28);
+    this.renderMultiplier();
+    this.renderAdder();
 
     // render grid lines
     stroke(GRID_COLOR);
@@ -314,13 +384,15 @@ const PLAY_SCENE = {
       }
     }
 
+    noStroke();
+    this.renderNumFlashers();
     this.renderClearFlashers();
 
     ///// render frame rate
     fill(255);
     noStroke();
-    textSize(40);
-    text(frameRate().toFixed(3), 80, 50);
+    textSize(20);
+    text(frameRate() > 55, 300, 580);
   },
 
   mouseClicked: function () {
@@ -346,8 +418,8 @@ const PLAY_SCENE = {
       );
       this.selectedPieceIndex = null;
       this.placeableGenIndex = 0; // trigger recalculate
-      this.turnsCount++;
       this.pendingCheckClear = true;
+      turnsCount++;
       return;
     }
 

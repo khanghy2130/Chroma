@@ -1,6 +1,7 @@
 const __skip__ = !!true;
 
-const BG_COLOR = 30;
+const BG_COLOR = 25;
+const DARK_COLOR = 15;
 const LIGHT_COLOR = 230;
 const GRID_COLOR = 150;
 const BUTTON_GLOW_SPEED = 0.05;
@@ -10,8 +11,10 @@ const FLYER_SCALING_SPEED = 0.05;
 const FLYER_MOVE_SPEED = 0.2;
 const FLYER_ROTATE_SPEED = 10;
 
-const CLEAR_DELAY = 15;
+const CLEAR_DELAY = 5;
 const FLASHER_SPEED = 0.06;
+
+const SCORE_CHECK_AMOUNTS = [100, 200, 300, 400, 500];
 
 // GRID
 const SCALER = 42; // grid scale
@@ -54,6 +57,13 @@ const ALL_SQUARES = [];
 const ALL_TRIANGLES = [];
 let ALL_SHAPES;
 let scene = "START"; // START / PLAY / END
+
+let totalScore = 0;
+let multiplier = 2.0;
+let adder = 0;
+let temporaryAdder = 0;
+let scoreCheckIndex = 0;
+let turnsCount = 0;
 
 let touchCountdown = 0;
 

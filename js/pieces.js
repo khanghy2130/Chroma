@@ -9,11 +9,10 @@ const PIECE_TYPES = [
 
 // return Piece: {type, flyer, placeables}
 function generatePiece(pieceIndex) {
-  // determine type
   const randomNum = random(100);
   let shapesCountIndex;
   // 15%, 45%, 40%
-  if (randomNum < 15) shapesCountIndex = 0;
+  if (randomNum < 15 && turnsCount > 0) shapesCountIndex = 0;
   else if (randomNum < 15 + 45) shapesCountIndex = 1;
   else shapesCountIndex = 2;
   const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);
