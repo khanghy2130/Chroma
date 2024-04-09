@@ -14,11 +14,13 @@ const FLYER_ROTATE_SPEED = 10;
 const CLEAR_DELAY = 10;
 const FLASHER_SPEED = 0.06;
 const CLEAR_RESULT_DURATION = 80;
-const TEXT_SHRINK_SPEED = 0.2;
+const TEXT_SHRINK_SPEED = 0.15;
 
 const SCORE_CHECK_AMOUNTS = [100, 200, 300, 400, 500];
 
 // GRID
+const SEAL_CHANCE = 0.2;
+const SEAL_SIZE = 25;
 const SCALER = 42; // grid scale
 const SQUARE_SIZE = 85;
 const TRIANGLE_SIZE = 75;
@@ -54,7 +56,6 @@ const SHAPES_COLORS = [
 ];
 
 // CONTROLS
-const SEALS_AMOUNT = 5;
 const ALL_SQUARES = [];
 const ALL_TRIANGLES = [];
 let ALL_SHAPES;
@@ -82,7 +83,7 @@ function getShapeColor(colorIndex, shadeIndex) {
   return color(c[0], c[1], c[2]);
 }
 
-function newRenderData(isSquare, hasSeal, colorIndex) {
+function newRenderData(isSquare, colorIndex) {
   if (typeof colorIndex !== "number") colorIndex = randomInt(0, 4);
   return {
     img: getRandomItem(
@@ -92,7 +93,7 @@ function newRenderData(isSquare, hasSeal, colorIndex) {
     ),
     textureOri: isSquare ? randomInt(0, 4) * 90 : randomInt(0, 3) * 120,
     colorIndex: colorIndex,
-    sealIndex: hasSeal ? randomInt(1, SEALS_AMOUNT + 1) : 0,
+    hasSeal: random() < SEAL_CHANCE,
     size: isSquare ? SQUARE_SIZE : TRIANGLE_SIZE,
   };
 }

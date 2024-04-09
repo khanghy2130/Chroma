@@ -57,7 +57,7 @@ function generatePieceFlyer(type, btnCenterPos) {
     case "T":
       // center triangle
       flyer.fShapes.push({
-        renderData: newRenderData(false, true),
+        renderData: newRenderData(false),
         r: 0,
         pos: [0, 0],
       });
@@ -66,7 +66,7 @@ function generatePieceFlyer(type, btnCenterPos) {
     case "S":
       // center square
       flyer.fShapes.push({
-        renderData: newRenderData(true, true),
+        renderData: newRenderData(true),
         r: 0,
         pos: [0, 0],
       });
@@ -293,7 +293,6 @@ function generatePlaceables() {
     case "T":
       for (let i = 0; i < ALL_TRIANGLES.length; i++) {
         const t = ALL_TRIANGLES[i];
-        //// check loner seal later
         if (t.renderData === null) {
           placeables.push({
             pos: t.centerPos,
@@ -306,7 +305,6 @@ function generatePlaceables() {
     case "S":
       for (let i = 0; i < ALL_SQUARES.length; i++) {
         const s = ALL_SQUARES[i];
-        //// check loner seal later
         if (s.renderData === null) {
           placeables.push({
             pos: s.centerPos,

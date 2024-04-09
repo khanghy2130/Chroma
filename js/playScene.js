@@ -14,6 +14,7 @@ const PLAY_SCENE = {
   // {shape, progress(0 to 1), hasCleared}
   clearFlasers: [],
   numFlashers: [], // { pos, addedScore, progress(0 to 1)}
+  sealFlashers: [], // { pos, progress }
   multIsActive: false,
   multColorIndex: null,
 
@@ -47,6 +48,7 @@ const PLAY_SCENE = {
     this.placementFlashers = [];
     this.clearFlasers = [];
     this.numFlashers = [];
+    this.sealFlashers = [];
     this.multColorIndex = null;
     this.refreshMult();
 
@@ -104,18 +106,11 @@ const PLAY_SCENE = {
           }
         }
       }
-      randomShape.renderData = newRenderData(
-        shapeIsSquare(randomShape),
-        false,
-        i
-      );
+      randomShape.renderData = newRenderData(shapeIsSquare(randomShape), i);
     }
   },
 
   renderPieces: function () {
-    for (let i = 0; i < 3; i++) {
-      this.pieceBtns[i].render(); // render button frame
-    }
     // have selected piece rendered last
     const pieceIndices = [0, 1, 2];
     if (this.selectedPieceIndex !== null) {
@@ -142,8 +137,14 @@ const PLAY_SCENE = {
           fShape.renderData.size,
           fShape.renderData.size
         );
-        if (fShape.renderData.sealIndex > 0) {
-          //// render seal
+        // render seal
+        if (fShape.renderData.hasSeal) {
+          rotate(-flyer.r - fShape.r - fShape.renderData.textureOri);
+          noStroke();
+          ellipse(0, 0, SEAL_SIZE, SEAL_SIZE);
+          stroke(LIGHT_COLOR);
+          line(-5, -5, 5, 5);
+          line(-5, 5, 5, -5);
         }
         pop(); // popMatrix(); // KA
       }
@@ -251,7 +252,15 @@ const PLAY_SCENE = {
         shape.renderData.size,
         shape.renderData.size
       );
-      ///// render seal
+      // render seal
+      if (shape.renderData.hasSeal) {
+        rotate(-GRID_ORI[shape.shapeIndex] - shape.renderData.textureOri);
+        noStroke();
+        ellipse(0, 0, SEAL_SIZE, SEAL_SIZE);
+        stroke(LIGHT_COLOR);
+        line(-5, -5, 5, 5);
+        line(-5, 5, 5, -5);
+      }
       pop(); // popMatrix(); // KA
     }
   },
@@ -303,7 +312,9 @@ const PLAY_SCENE = {
           pos: fl.shape.centerPos,
           addedScore:
             "+" +
-            (adder + temporaryAdder * (this.multIsActive ? multiplier : 1)),
+            floor(
+              adder + temporaryAdder * (this.multIsActive ? multiplier : 1)
+            ),
           progress: 0,
         });
       }
@@ -325,9 +336,13 @@ const PLAY_SCENE = {
     textSize(40 * animations.scoreScaler);
     animations.scoreScaler = max(1, animations.scoreScaler - TEXT_SHRINK_SPEED);
     fill(DARK_COLOR);
-    rect(75, 55, 110, 50, 10);
+    rect(75, 55, 110, 60, 10);
     fill(LIGHT_COLOR);
-    text(animations.resultDelay > 0 ? "+" + totalAdded : totalScore, 75, 57);
+    text(
+      floor(animations.resultDelay > 0 ? "+" + totalAdded : totalScore),
+      75,
+      57
+    );
   },
 
   renderScoreCheck: function () {
@@ -388,6 +403,19 @@ const PLAY_SCENE = {
     }
   },
 
+  addSealFlasher: function (pos) {
+    this.sealFlashers.push({ pos: pos, progress: 0 });
+  },
+  renderSealFlashers: function () {
+    for (let i = this.sealFlashers.length - 1; i >= 0; i--) {
+      const fl = this.sealFlashers[i];
+      fl.progress += 0.05;
+      fill(LIGHT_COLOR, min(255, (1 - fl.progress) * 300));
+      ellipse(fl.pos[0], fl.pos[1], SEAL_SIZE, SEAL_SIZE);
+      if (fl.progress >= 1) this.sealFlashers.splice(i, 1);
+    }
+  },
+
   render: function () {
     // reset
     this.hoveredPlaceable = null;
@@ -396,6 +424,8 @@ const PLAY_SCENE = {
     generatePlaceables();
     this.checkHoverPlaceables();
     this.renderPlacementFlashers();
+    fill(DARK_COLOR);
+    strokeWeight(5);
     this.renderPlacedShapes();
 
     noStroke();
@@ -414,6 +444,11 @@ const PLAY_SCENE = {
       line(l[0][0], l[0][1], l[1][0], l[1][1]);
     }
 
+    for (let i = 0; i < 3; i++) {
+      this.pieceBtns[i].render(); // render button frame
+    }
+    fill(DARK_COLOR);
+    strokeWeight(5);
     this.renderPieces();
 
     // render red dots
@@ -434,6 +469,7 @@ const PLAY_SCENE = {
     noStroke();
     this.renderNumFlashers();
     this.renderClearFlashers();
+    this.renderSealFlashers();
 
     ///// render frame rate
     fill(255);
@@ -499,13 +535,21 @@ const PLAY_SCENE = {
       return shapeA.centerPos[0] - shapeB.centerPos[0];
     });
     for (let i = 0; i < clearedShapes.length; i++) {
+      const cs = clearedShapes[i];
       // activate mult
-      if (clearedShapes[i].renderData.colorIndex === this.multColorIndex) {
+      if (cs.renderData.colorIndex === this.multColorIndex) {
         this.multIsActive = true;
+      }
+      // consume seal
+      if (cs.renderData.hasSeal) {
+        cs.renderData.hasSeal = false;
+        multiplier += 0.1;
+        animations.multScaler = 2;
+        this.addSealFlasher(cs.centerPos);
       }
       this.clearFlasers.push({
         delay: i * CLEAR_DELAY,
-        shape: clearedShapes[i],
+        shape: cs,
         progress: 0,
         textProgress: 0,
       });
