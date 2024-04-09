@@ -1,7 +1,7 @@
 const __skip__ = !!true;
 
 const BG_COLOR = 25;
-const DARK_COLOR = 15;
+const DARK_COLOR = 12;
 const LIGHT_COLOR = 230;
 const GRID_COLOR = 150;
 const BUTTON_GLOW_SPEED = 0.05;
@@ -11,8 +11,10 @@ const FLYER_SCALING_SPEED = 0.05;
 const FLYER_MOVE_SPEED = 0.2;
 const FLYER_ROTATE_SPEED = 10;
 
-const CLEAR_DELAY = 5;
+const CLEAR_DELAY = 10;
 const FLASHER_SPEED = 0.06;
+const CLEAR_RESULT_DURATION = 80;
+const TEXT_SHRINK_SPEED = 0.2;
 
 const SCORE_CHECK_AMOUNTS = [100, 200, 300, 400, 500];
 
@@ -27,7 +29,7 @@ const PLUS_DOTS = [];
 
 // TEXTURE
 const NOISE_SCALE = 0.012;
-let IMAGES_AMOUNT = 4;
+let IMAGES_AMOUNT = 3;
 const SHAPES_COLORS = [
   // green
   [
@@ -41,7 +43,7 @@ const SHAPES_COLORS = [
   ],
   // blue
   [
-    [100, 200, 255],
+    [110, 210, 255],
     [31, 77, 156],
   ],
   // pink
@@ -58,12 +60,20 @@ const ALL_TRIANGLES = [];
 let ALL_SHAPES;
 let scene = "START"; // START / PLAY / END
 
+let totalAdded = 0;
 let totalScore = 0;
 let multiplier = 2.0;
 let adder = 0;
 let temporaryAdder = 0;
 let scoreCheckIndex = 0;
 let turnsCount = 0;
+let animations = {
+  resultDelay: 0,
+
+  scoreScaler: 1, // 1.5
+  adderScaler: 1, // 2
+  multScaler: 1, // 2
+};
 
 let touchCountdown = 0;
 

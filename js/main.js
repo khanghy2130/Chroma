@@ -8,6 +8,7 @@ function setup() {
   }
 
   // configs
+  ///frameRate(30); ///
   pixelDensity(1); // nKA
   rectMode(CENTER);
   imageMode(CENTER);

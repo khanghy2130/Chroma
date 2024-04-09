@@ -14,14 +14,32 @@ const PLAY_SCENE = {
   // {shape, progress(0 to 1), hasCleared}
   clearFlasers: [],
   numFlashers: [], // { pos, addedScore, progress(0 to 1)}
+  multIsActive: false,
+  multColorIndex: null,
+
+  refreshMult: function () {
+    this.multIsActive = false;
+    const prevColorIndex = this.multColorIndex;
+    while (prevColorIndex === this.multColorIndex) {
+      this.multColorIndex = randomInt(0, 4);
+    }
+    animations.multScaler = 2;
+  },
 
   initializeGame: function () {
+    totalAdded = 0;
     totalScore = 0;
     multiplier = 2.0;
     adder = 0;
     temporaryAdder = 0;
     scoreCheckIndex = 0;
     turnsCount = 0;
+    animations = {
+      resultDelay: 0,
+      scoreScaler: 1,
+      adderScaler: 1,
+      multScaler: 1,
+    };
 
     this.placeableGenIndex = 0;
     this.selectedPieceIndex = null;
@@ -29,6 +47,8 @@ const PLAY_SCENE = {
     this.placementFlashers = [];
     this.clearFlasers = [];
     this.numFlashers = [];
+    this.multColorIndex = null;
+    this.refreshMult();
 
     // make piece buttons
     if (this.pieceBtns.length === 0) {
@@ -264,8 +284,7 @@ const PLAY_SCENE = {
       // flasher cover
       if (fl.progress < 1) {
         fl.progress = min(1, fl.progress + FLASHER_SPEED);
-        //// custom mult color here
-        fill(255, sin(fl.progress * 180) * 255);
+        fill(LIGHT_COLOR, sin(fl.progress * 180) * 255);
         beginShape();
         for (let v = 0; v < fl.shape.points.length; v++) {
           vertex(fl.shape.points[v][0], fl.shape.points[v][1]);
@@ -278,10 +297,13 @@ const PLAY_SCENE = {
       if (!fl.hasCleared && fl.progress >= 0.5) {
         fl.hasCleared = true;
         fl.shape.renderData = null;
+        this.triggerClear();
         /// clear sound here
         this.numFlashers.push({
           pos: fl.shape.centerPos,
-          addedScore: "+" + 100, /// display score
+          addedScore:
+            "+" +
+            (adder + temporaryAdder * (this.multIsActive ? multiplier : 1)),
           progress: 0,
         });
       }
@@ -289,22 +311,23 @@ const PLAY_SCENE = {
   },
 
   renderNumFlashers: function () {
-    textSize(18);
+    textSize(20);
     for (let i = this.numFlashers.length - 1; i >= 0; i--) {
       const fl = this.numFlashers[i];
       fl.progress += 0.018; // text duration
-      fill(LIGHT_COLOR, min(255, (1 - fl.progress) * 1000));
+      fill(LIGHT_COLOR, min(255, (1 - fl.progress) * 1500));
       text(fl.addedScore, fl.pos[0], fl.pos[1]);
       if (fl.progress >= 1) this.numFlashers.splice(i, 1);
     }
   },
 
   renderTotalScore: function () {
-    textSize(40);
+    textSize(40 * animations.scoreScaler);
+    animations.scoreScaler = max(1, animations.scoreScaler - TEXT_SHRINK_SPEED);
     fill(DARK_COLOR);
     rect(75, 55, 110, 50, 10);
     fill(LIGHT_COLOR);
-    text(totalScore + 1234, 75, 57);
+    text(animations.resultDelay > 0 ? "+" + totalAdded : totalScore, 75, 57);
   },
 
   renderScoreCheck: function () {
@@ -319,26 +342,50 @@ const PLAY_SCENE = {
   },
 
   renderMultiplier: function () {
-    const spinTime = frameCount * (false ? 10 : 1); ///
-    fill("lime"); ///
+    const spinTime = frameCount * (this.multIsActive ? 10 : 1);
+    fill(SHAPES_COLORS[this.multColorIndex][0]);
     arc(70, 400, 85, 85, spinTime, spinTime + 50);
     arc(70, 400, 85, 85, spinTime + 180, spinTime + 230);
     fill(DARK_COLOR);
     ellipse(70, 400, 80, 80);
-    fill("lime"); ///
+    fill(SHAPES_COLORS[this.multColorIndex][0]);
+    textSize(28 * animations.multScaler);
+    animations.multScaler = max(1, animations.multScaler - TEXT_SHRINK_SPEED);
     text("x" + multiplier.toFixed(1), 70, 400);
   },
 
   renderAdder: function () {
-    const spinSpeed = 1.0; /// scale with temporary adder value
-    const spinTime = -frameCount * spinSpeed;
+    const spinTime = -frameCount * (1 + adder * 0.01);
     fill(LIGHT_COLOR);
     arc(530, 400, 85, 85, spinTime - 50, spinTime);
     arc(530, 400, 85, 85, spinTime - 230, spinTime - 180);
     fill(DARK_COLOR);
     ellipse(530, 400, 80, 80);
     fill(LIGHT_COLOR);
-    text("+" + adder, 530, 400);
+    textSize(28 * animations.adderScaler);
+    animations.adderScaler = max(1, animations.adderScaler - TEXT_SHRINK_SPEED);
+    text("+" + (adder + temporaryAdder), 530, 400);
+  },
+
+  triggerClear: function () {
+    animations.resultDelay = CLEAR_RESULT_DURATION;
+    temporaryAdder += 10;
+    totalAdded += adder + temporaryAdder * (this.multIsActive ? multiplier : 1);
+
+    // trigger animations
+    animations.adderScaler = 2;
+    animations.scoreScaler = 1.5;
+  },
+
+  updateAnimations: function () {
+    // animations completed
+    if (animations.resultDelay-- === 0) {
+      temporaryAdder = 0; // reset to base adder
+      animations.adderScaler = 2;
+      totalScore += totalAdded;
+      animations.scoreScaler = 2;
+      if (this.multIsActive) this.refreshMult();
+    }
   },
 
   render: function () {
@@ -352,9 +399,9 @@ const PLAY_SCENE = {
     this.renderPlacedShapes();
 
     noStroke();
+    this.updateAnimations();
     this.renderTotalScore();
     this.renderScoreCheck();
-    textSize(28);
     this.renderMultiplier();
     this.renderAdder();
 
@@ -452,6 +499,10 @@ const PLAY_SCENE = {
       return shapeA.centerPos[0] - shapeB.centerPos[0];
     });
     for (let i = 0; i < clearedShapes.length; i++) {
+      // activate mult
+      if (clearedShapes[i].renderData.colorIndex === this.multColorIndex) {
+        this.multIsActive = true;
+      }
       this.clearFlasers.push({
         delay: i * CLEAR_DELAY,
         shape: clearedShapes[i],
@@ -459,6 +510,7 @@ const PLAY_SCENE = {
         textProgress: 0,
       });
     }
+    totalAdded = 0; // reset added sum from last turn
   },
 };
 
