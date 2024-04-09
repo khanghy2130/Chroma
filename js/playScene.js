@@ -17,6 +17,7 @@ const PLAY_SCENE = {
   sealFlashers: [], // { pos, progress }
   multIsActive: false,
   multColorIndex: null,
+  plusDot: null,
 
   refreshMult: function () {
     this.multIsActive = false;
@@ -25,6 +26,51 @@ const PLAY_SCENE = {
       this.multColorIndex = randomInt(0, 4);
     }
     animations.multScaler = 2;
+  },
+  refreshPlusDot: function () {
+    // look for a different pos than current
+    const prevPlusDot = this.plusDot;
+    const remainingPositions = PLUS_DOTS.slice(0);
+    while (remainingPositions.length > 0) {
+      const newPlusDotIndex = randomInt(0, remainingPositions.length);
+      let newPlusDot = remainingPositions[newPlusDotIndex];
+      // not previous one
+      if (prevPlusDot !== newPlusDot) {
+        // check if not surrounded
+        let isSurrounded = true;
+        for (let i = 0; i < newPlusDot.shapes.length; i++) {
+          if (
+            newPlusDot.shapes[i].renderData === null ||
+            newPlusDot.shapes[i].renderData.willBeCleared
+          ) {
+            isSurrounded = false;
+            break;
+          }
+        }
+        if (!isSurrounded) {
+          this.plusDot = newPlusDot;
+          break;
+        }
+      }
+      remainingPositions.splice(newPlusDotIndex, 1);
+    }
+    this.addSealFlasher(this.plusDot.pos); // spawn animation
+  },
+  checkCollectPlus: function () {
+    let isSurrounded = true;
+    for (let i = 0; i < this.plusDot.shapes.length; i++) {
+      if (this.plusDot.shapes[i].renderData === null) {
+        isSurrounded = false;
+        break;
+      }
+    }
+    if (isSurrounded) {
+      animations.adderScaler = 2;
+      adder += 10;
+      this.refreshPlusDot();
+      return true;
+    }
+    return false;
   },
 
   initializeGame: function () {
@@ -51,6 +97,8 @@ const PLAY_SCENE = {
     this.sealFlashers = [];
     this.multColorIndex = null;
     this.refreshMult();
+    this.plusDotIndex = null;
+    this.refreshPlusDot();
 
     // make piece buttons
     if (this.pieceBtns.length === 0) {
@@ -138,7 +186,7 @@ const PLAY_SCENE = {
           fShape.renderData.size
         );
         // render seal
-        if (fShape.renderData.hasSeal) {
+        if (fShape.renderData.special === "X") {
           rotate(-flyer.r - fShape.r - fShape.renderData.textureOri);
           noStroke();
           ellipse(0, 0, SEAL_SIZE, SEAL_SIZE);
@@ -253,7 +301,7 @@ const PLAY_SCENE = {
         shape.renderData.size
       );
       // render seal
-      if (shape.renderData.hasSeal) {
+      if (shape.renderData.special === "X") {
         rotate(-GRID_ORI[shape.shapeIndex] - shape.renderData.textureOri);
         noStroke();
         ellipse(0, 0, SEAL_SIZE, SEAL_SIZE);
@@ -407,9 +455,10 @@ const PLAY_SCENE = {
     this.sealFlashers.push({ pos: pos, progress: 0 });
   },
   renderSealFlashers: function () {
+    noStroke();
     for (let i = this.sealFlashers.length - 1; i >= 0; i--) {
       const fl = this.sealFlashers[i];
-      fl.progress += 0.05;
+      fl.progress += 0.03; // seal flasher speed
       fill(LIGHT_COLOR, min(255, (1 - fl.progress) * 300));
       ellipse(fl.pos[0], fl.pos[1], SEAL_SIZE, SEAL_SIZE);
       if (fl.progress >= 1) this.sealFlashers.splice(i, 1);
@@ -469,13 +518,35 @@ const PLAY_SCENE = {
     noStroke();
     this.renderNumFlashers();
     this.renderClearFlashers();
+
+    // render plus dot
+    noStroke();
+    fill(LIGHT_COLOR);
+    ellipse(this.plusDot.pos[0], this.plusDot.pos[1], SEAL_SIZE, SEAL_SIZE);
+    stroke(DARK_COLOR);
+    strokeWeight(5);
+    line(
+      this.plusDot.pos[0],
+      this.plusDot.pos[1] - 6,
+      this.plusDot.pos[0],
+      this.plusDot.pos[1] + 6
+    );
+    line(
+      this.plusDot.pos[0] - 6,
+      this.plusDot.pos[1],
+      this.plusDot.pos[0] + 6,
+      this.plusDot.pos[1]
+    );
+
+    /// render portals
+
     this.renderSealFlashers();
 
     ///// render frame rate
     fill(255);
     noStroke();
     textSize(20);
-    text(frameRate() > 55, 300, 580);
+    text(frameRate() > 55, 300, 585);
   },
 
   mouseClicked: function () {
@@ -534,6 +605,8 @@ const PLAY_SCENE = {
     clearedShapes.sort(function (shapeA, shapeB) {
       return shapeA.centerPos[0] - shapeB.centerPos[0];
     });
+
+    let applyExtraDelay = this.checkCollectPlus();
     for (let i = 0; i < clearedShapes.length; i++) {
       const cs = clearedShapes[i];
       // activate mult
@@ -541,12 +614,14 @@ const PLAY_SCENE = {
         this.multIsActive = true;
       }
       // consume seal
-      if (cs.renderData.hasSeal) {
-        cs.renderData.hasSeal = false;
+      if (cs.renderData.special === "X") {
+        applyExtraDelay = true;
+        cs.renderData.special = "NONE";
         multiplier += 0.1;
         animations.multScaler = 2;
         this.addSealFlasher(cs.centerPos);
       }
+      cs.renderData.willBeCleared = true;
       this.clearFlasers.push({
         delay: i * CLEAR_DELAY,
         shape: cs,
@@ -555,6 +630,11 @@ const PLAY_SCENE = {
       });
     }
     totalAdded = 0; // reset added sum from last turn
+    if (applyExtraDelay) {
+      for (let i = 0; i < this.clearFlasers.length; i++) {
+        this.clearFlasers[i].delay += UPGRADE_DELAY;
+      }
+    }
   },
 };
 

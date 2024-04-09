@@ -2,7 +2,7 @@ const PIECE_TYPES = [
   // 1 shape
   ["T", "S"],
   // 2 shapes
-  ["TT", "ST"],
+  ["TT", "ST", "ST"],
   // 3 shapes
   ["STT", "TTS", "STS", "TST-", "TST^"],
 ];
@@ -11,21 +11,24 @@ const PIECE_TYPES = [
 function generatePiece(pieceIndex) {
   const randomNum = random(100);
   let shapesCountIndex;
-  // 20%, 40%, 40%
-  if (randomNum < 20 && turnsCount > 0) shapesCountIndex = 0;
-  else if (randomNum < 20 + 40) shapesCountIndex = 1;
-  else shapesCountIndex = 2;
+  if (randomNum < PIECE_TYPES_CHANCES[0] && turnsCount > 0) {
+    shapesCountIndex = 0;
+  } else if (randomNum < PIECE_TYPES_CHANCES[0] + PIECE_TYPES_CHANCES[1]) {
+    shapesCountIndex = 1;
+  } else {
+    shapesCountIndex = 2;
+  }
   const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);
 
-  // check if already have this type (unless it's 1 shape)
-  // if (shapesCountIndex !== 0) {
-  for (let i = 0; i < PLAY_SCENE.pieces.length; i++) {
-    if (i === pieceIndex) continue;
-    if (PLAY_SCENE.pieces[i].type === type) {
-      return generatePiece(pieceIndex); // reroll
+  // check if already have this type (unless it's 1 shape) //// keep?
+  if (shapesCountIndex !== 0) {
+    for (let i = 0; i < PLAY_SCENE.pieces.length; i++) {
+      if (i === pieceIndex) continue;
+      if (PLAY_SCENE.pieces[i].type === type) {
+        return generatePiece(pieceIndex); // reroll
+      }
     }
   }
-  // }
 
   const btnCenterPos = [
     PLAY_SCENE.pieceBtns[pieceIndex].x,

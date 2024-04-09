@@ -12,6 +12,7 @@ const FLYER_MOVE_SPEED = 0.2;
 const FLYER_ROTATE_SPEED = 10;
 
 const CLEAR_DELAY = 10;
+const UPGRADE_DELAY = 40;
 const FLASHER_SPEED = 0.06;
 const CLEAR_RESULT_DURATION = 80;
 const TEXT_SHRINK_SPEED = 0.15;
@@ -19,7 +20,9 @@ const TEXT_SHRINK_SPEED = 0.15;
 const SCORE_CHECK_AMOUNTS = [100, 200, 300, 400, 500];
 
 // GRID
+const PIECE_TYPES_CHANCES = [20, 35];
 const SEAL_CHANCE = 0.2;
+const CHROMA_CHANCE = 0.2;
 const SEAL_SIZE = 25;
 const SCALER = 42; // grid scale
 const SQUARE_SIZE = 85;
@@ -85,6 +88,12 @@ function getShapeColor(colorIndex, shadeIndex) {
 
 function newRenderData(isSquare, colorIndex) {
   if (typeof colorIndex !== "number") colorIndex = randomInt(0, 4);
+  const randomNum = random();
+  let special = "NONE";
+  if (turnsCount > 0) {
+    if (randomNum < SEAL_CHANCE) special = "X";
+    else if (randomNum < SEAL_CHANCE + CHROMA_CHANCE) special = "CHROMA";
+  }
   return {
     img: getRandomItem(
       (isSquare ? TEXTURE_LOADER.squareImages : TEXTURE_LOADER.triangleImages)[
@@ -93,7 +102,7 @@ function newRenderData(isSquare, colorIndex) {
     ),
     textureOri: isSquare ? randomInt(0, 4) * 90 : randomInt(0, 3) * 120,
     colorIndex: colorIndex,
-    hasSeal: random() < SEAL_CHANCE,
+    special: special,
     size: isSquare ? SQUARE_SIZE : TRIANGLE_SIZE,
   };
 }

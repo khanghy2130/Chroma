@@ -13,7 +13,8 @@ SHAPE: null | {
   points[3 | 4]
   
   centerPos
-  renderData: null | { img, textureOri, colorIndex, hasSeal, size }
+  renderData: null | { img, textureOri, colorIndex, special, size }
+  willBeCleared
 }
 
 PLUS_DOT {
