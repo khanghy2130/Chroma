@@ -22,7 +22,7 @@ const SCORE_CHECK_AMOUNTS = [100, 200, 300, 400, 500];
 // GRID
 const PIECE_TYPES_CHANCES = [20, 35];
 const SEAL_CHANCE = 0.2;
-const CHROMA_CHANCE = 0.2;
+const CHROMA_CHANCE = 0.15;
 const SEAL_SIZE = 25;
 const SCALER = 42; // grid scale
 const SQUARE_SIZE = 85;
@@ -104,6 +104,7 @@ function newRenderData(isSquare, colorIndex) {
     colorIndex: colorIndex,
     special: special,
     size: isSquare ? SQUARE_SIZE : TRIANGLE_SIZE,
+    isSquare: isSquare,
   };
 }
 

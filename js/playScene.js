@@ -185,7 +185,7 @@ const PLAY_SCENE = {
           fShape.renderData.size,
           fShape.renderData.size
         );
-        // render seal
+        // render special
         if (fShape.renderData.special === "X") {
           rotate(-flyer.r - fShape.r - fShape.renderData.textureOri);
           noStroke();
@@ -193,6 +193,20 @@ const PLAY_SCENE = {
           stroke(LIGHT_COLOR);
           line(-5, -5, 5, 5);
           line(-5, 5, 5, -5);
+        } else if (fShape.renderData.special === "CHROMA") {
+          // change texture after a bit
+          if (frameCount % 30 === 0) {
+            fShape.renderData.img = getRandomItem(
+              (fShape.renderData.isSquare
+                ? TEXTURE_LOADER.squareImages
+                : TEXTURE_LOADER.triangleImages)[randomInt(0, 4)]
+            );
+            fShape.renderData.textureOri = fShape.renderData.isSquare
+              ? randomInt(0, 4) * 90
+              : randomInt(0, 3) * 120;
+          }
+          noStroke();
+          ellipse(0, 0, 10, 10);
         }
         pop(); // popMatrix(); // KA
       }
@@ -300,7 +314,7 @@ const PLAY_SCENE = {
         shape.renderData.size,
         shape.renderData.size
       );
-      // render seal
+      // render special
       if (shape.renderData.special === "X") {
         rotate(-GRID_ORI[shape.shapeIndex] - shape.renderData.textureOri);
         noStroke();
@@ -308,6 +322,20 @@ const PLAY_SCENE = {
         stroke(LIGHT_COLOR);
         line(-5, -5, 5, 5);
         line(-5, 5, 5, -5);
+      } else if (shape.renderData.special === "CHROMA") {
+        // change texture after a bit
+        if (frameCount % 30 === 0) {
+          shape.renderData.img = getRandomItem(
+            (shape.renderData.isSquare
+              ? TEXTURE_LOADER.squareImages
+              : TEXTURE_LOADER.triangleImages)[randomInt(0, 4)]
+          );
+          shape.renderData.textureOri = shape.renderData.isSquare
+            ? randomInt(0, 4) * 90
+            : randomInt(0, 3) * 120;
+        }
+        noStroke();
+        ellipse(0, 0, 10, 10);
       }
       pop(); // popMatrix(); // KA
     }
@@ -418,7 +446,7 @@ const PLAY_SCENE = {
   },
 
   renderAdder: function () {
-    const spinTime = -frameCount * (1 + adder * 0.01);
+    const spinTime = -frameCount * (1 + adder * 0.05);
     fill(LIGHT_COLOR);
     arc(530, 400, 85, 85, spinTime - 50, spinTime);
     arc(530, 400, 85, 85, spinTime - 230, spinTime - 180);
@@ -484,6 +512,10 @@ const PLAY_SCENE = {
     this.renderMultiplier();
     this.renderAdder();
 
+    noStroke();
+    this.renderNumFlashers();
+    this.renderClearFlashers();
+
     // render grid lines
     stroke(GRID_COLOR);
     strokeWeight(2);
@@ -493,14 +525,7 @@ const PLAY_SCENE = {
       line(l[0][0], l[0][1], l[1][0], l[1][1]);
     }
 
-    for (let i = 0; i < 3; i++) {
-      this.pieceBtns[i].render(); // render button frame
-    }
-    fill(DARK_COLOR);
-    strokeWeight(5);
-    this.renderPieces();
-
-    // render red dots
+    // render placeable hints
     if (this.selectedPieceIndex !== null) {
       stroke(255, 255, 0);
       strokeWeight(10);
@@ -514,10 +539,6 @@ const PLAY_SCENE = {
         }
       }
     }
-
-    noStroke();
-    this.renderNumFlashers();
-    this.renderClearFlashers();
 
     // render plus dot
     noStroke();
@@ -537,10 +558,17 @@ const PLAY_SCENE = {
       this.plusDot.pos[0] + 6,
       this.plusDot.pos[1]
     );
+    this.renderSealFlashers();
 
     /// render portals
 
-    this.renderSealFlashers();
+    // render button frame
+    for (let i = 0; i < 3; i++) {
+      this.pieceBtns[i].render();
+    }
+    fill(DARK_COLOR);
+    strokeWeight(5);
+    this.renderPieces();
 
     ///// render frame rate
     fill(255);
@@ -594,6 +622,12 @@ const PLAY_SCENE = {
     const checkedShapes = {};
     const groups = [];
     for (let i = 0; i < ALL_SHAPES.length; i++) {
+      if (
+        ALL_SHAPES[i].renderData === null ||
+        ALL_SHAPES[i].renderData.special === "CHROMA"
+      ) {
+        continue;
+      }
       checkShape(ALL_SHAPES[i], checkedShapes, groups, [], true);
     }
 
@@ -606,11 +640,23 @@ const PLAY_SCENE = {
       return shapeA.centerPos[0] - shapeB.centerPos[0];
     });
 
+    const chromas = [];
+    let delayCounter = 0;
     let applyExtraDelay = this.checkCollectPlus();
     for (let i = 0; i < clearedShapes.length; i++) {
       const cs = clearedShapes[i];
-      // activate mult
-      if (cs.renderData.colorIndex === this.multColorIndex) {
+
+      // skip this chroma shape in group if already added
+      if (cs.renderData.special === "CHROMA") {
+        if (chromas.includes(cs)) continue;
+        chromas.push(cs);
+      }
+
+      // activate mult (not chroma & match color with mult color)
+      if (
+        cs.renderData.special !== "CHROMA" &&
+        cs.renderData.colorIndex === this.multColorIndex
+      ) {
         this.multIsActive = true;
       }
       // consume seal
@@ -623,7 +669,7 @@ const PLAY_SCENE = {
       }
       cs.renderData.willBeCleared = true;
       this.clearFlasers.push({
-        delay: i * CLEAR_DELAY,
+        delay: delayCounter++ * CLEAR_DELAY,
         shape: cs,
         progress: 0,
         textProgress: 0,
@@ -643,21 +689,31 @@ function checkShape(
   checkedShapes,
   groups,
   currentGroup,
-  doesAddToGroups
+  doesAddToGroups // for the first shape in group only
 ) {
   // empty or already checked
   if (shape.renderData === null || checkedShapes[shape.shapeID]) return;
 
-  checkedShapes[shape.shapeID] = true; // mark checked
+  // if is chroma, check if already added to group
+  if (shape.renderData.special === "CHROMA") {
+    // exit if already added this to group
+    if (currentGroup.includes(shape)) {
+      return;
+    }
+  } else {
+    checkedShapes[shape.shapeID] = true; // mark checked if not chroma
+  }
+
   currentGroup.push(shape); // add self to group
   if (doesAddToGroups) groups.push(currentGroup);
   for (let nb = 0; nb < shape.nShapes.length; nb++) {
     const nShape = shape.nShapes[nb];
-    // jump to that shape if same color
+    // jump to that shape if same color OR is chroma
     if (
       nShape &&
       nShape.renderData !== null &&
-      nShape.renderData.colorIndex === shape.renderData.colorIndex
+      (nShape.renderData.colorIndex === currentGroup[0].renderData.colorIndex ||
+        nShape.renderData.special === "CHROMA")
     ) {
       checkShape(nShape, checkedShapes, groups, currentGroup);
     }

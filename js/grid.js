@@ -13,7 +13,7 @@ SHAPE: null | {
   points[3 | 4]
   
   centerPos
-  renderData: null | { img, textureOri, colorIndex, special, size }
+  renderData: null | { img, textureOri, colorIndex, special, size, isSquare }
   willBeCleared
 }
 
