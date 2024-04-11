@@ -24,14 +24,14 @@ function generatePiece(pieceIndex) {
   const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);
 
   // reroll if already have this type in hand (unless it's 1 shape)
-  if (shapesCountIndex !== 0) {
-    for (let i = 0; i < PLAY_SCENE.pieces.length; i++) {
-      if (i === pieceIndex) continue;
-      if (PLAY_SCENE.pieces[i].type === type) {
-        return generatePiece(pieceIndex); // reroll
-      }
+  // if (shapesCountIndex !== 0) {
+  for (let i = 0; i < PLAY_SCENE.pieces.length; i++) {
+    if (i === pieceIndex) continue;
+    if (PLAY_SCENE.pieces[i].type === type) {
+      return generatePiece(pieceIndex); // reroll
     }
   }
+  // }
 
   const btnCenterPos = [
     PLAY_SCENE.pieceBtns[pieceIndex].x,

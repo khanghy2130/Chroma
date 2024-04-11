@@ -234,6 +234,14 @@ const PLAY_SCENE = {
       let targetRotation = flyer.r;
       // is selected piece?
       if (pieceIndices[i] === this.selectedPieceIndex) {
+        // check to show tooltip: no space
+        if (
+          this.placeableGenIndex > 3 &&
+          this.pieces[pieceIndices[i]].placeables.length === 0
+        ) {
+          tooltip.set("No possible placement.", [260, 50]);
+        }
+
         // grow to normal scaling
         if (flyer.scaling < 1) {
           flyer.scaling = min(1, flyer.scaling + FLYER_SCALING_SPEED);
@@ -342,6 +350,17 @@ const PLAY_SCENE = {
         stroke(LIGHT_COLOR);
         line(-5, -5, 5, 5);
         line(-5, 5, 5, -5);
+        // tooltip
+        if (
+          PLAY_SCENE.selectedPieceIndex === null &&
+          dist(mouseX, mouseY, shape.centerPos[0], shape.centerPos[1]) <
+            SEAL_SIZE / 2
+        ) {
+          tooltip.set(
+            "Clear this shape\nto increase\nMULTIPLIER by 0.1",
+            [230, 85]
+          );
+        }
       } else if (shape.renderData.special === "CHROMA") {
         // change texture after a bit
         if (frameCount % 30 === 0) {
@@ -356,6 +375,17 @@ const PLAY_SCENE = {
         }
         noStroke();
         ellipse(0, 0, 10, 10);
+        // tooltip
+        if (
+          PLAY_SCENE.selectedPieceIndex === null &&
+          dist(mouseX, mouseY, shape.centerPos[0], shape.centerPos[1]) <
+            SEAL_SIZE / 2
+        ) {
+          tooltip.set(
+            "This shape matches color\nwith all adjacents.",
+            [275, 60]
+          );
+        }
       }
       pop(); // popMatrix(); // KA
     }
@@ -444,7 +474,7 @@ const PLAY_SCENE = {
 
   renderScoreCheck: function () {
     fill(DARK_COLOR);
-    rect(525, 58, 120, 75, 10);
+    rect(525, 58, 120, 76, 10);
     textSize(40);
     fill(LIGHT_COLOR);
     text(SCORE_CHECK_AMOUNTS[scoreCheckIndex], 525, 50);
@@ -464,6 +494,22 @@ const PLAY_SCENE = {
       line(480, 47, 570, 47);
       noStroke();
     }
+
+    // tooltip
+    if (
+      PLAY_SCENE.selectedPieceIndex === null &&
+      mouseX > 465 &&
+      mouseX < 585 &&
+      mouseY > 20 &&
+      mouseY < 96
+    ) {
+      tooltip.set(
+        `SCORE CHECK #${scoreCheckIndex + 1}: get\n${
+          SCORE_CHECK_AMOUNTS[scoreCheckIndex]
+        } score before\n${this.turnsLeft} turns. Pass 5\nscore checks to win.`,
+        [235, 110]
+      );
+    }
   },
 
   renderMultiplier: function () {
@@ -477,6 +523,21 @@ const PLAY_SCENE = {
     textSize(28 * animations.multScaler);
     animations.multScaler = max(1, animations.multScaler - TEXT_SHRINK_SPEED);
     text("x" + multiplier.toFixed(1), 70, 400);
+
+    // tooltip
+    if (
+      PLAY_SCENE.selectedPieceIndex === null &&
+      dist(mouseX, mouseY, 70, 400) < 40
+    ) {
+      tooltip.set(
+        `MULTIPLIER: x${multiplier.toFixed(
+          1
+        )} all\nscore gained when\nclearing ${
+          SHAPES_COLORS_NAMES[this.multColorIndex]
+        } shapes.\nChange color after.`,
+        [250, 110]
+      );
+    }
   },
 
   renderAdder: function () {
@@ -490,6 +551,17 @@ const PLAY_SCENE = {
     textSize(28 * animations.adderScaler);
     animations.adderScaler = max(1, animations.adderScaler - TEXT_SHRINK_SPEED);
     text("+" + (adder + temporaryAdder), 530, 400);
+
+    // tooltip
+    if (
+      PLAY_SCENE.selectedPieceIndex === null &&
+      dist(mouseX, mouseY, 530, 400) < 40
+    ) {
+      tooltip.set(
+        "ADDER: Each shape cleared\ntemporarily +10 ADDER.\n(extra score for more\nshapes cleared in 1 turn)",
+        [300, 110]
+      );
+    }
   },
 
   triggerClear: function () {
@@ -531,6 +603,7 @@ const PLAY_SCENE = {
   render: function () {
     // reset
     this.hoveredPlaceable = null;
+    tooltip.isShown = false;
 
     background(BG_COLOR);
     generatePlaceables();
@@ -591,6 +664,27 @@ const PLAY_SCENE = {
       this.plusDot.pos[0] + 6,
       this.plusDot.pos[1]
     );
+    // tooltip & highlight shapes
+    if (
+      PLAY_SCENE.selectedPieceIndex === null &&
+      dist(mouseX, mouseY, this.plusDot.pos[0], this.plusDot.pos[1]) <
+        SEAL_SIZE / 2
+    ) {
+      tooltip.set(
+        "Completely surround\nthis to permanently\n+10 ADDER.",
+        [230, 85]
+      );
+      noStroke();
+      fill(255, 30 + cos(frameCount * 6) * 30);
+      for (let i = 0; i < this.plusDot.shapes.length; i++) {
+        const points = this.plusDot.shapes[i].points;
+        beginShape();
+        for (let j = 0; j < points.length; j++) {
+          vertex(points[j][0], points[j][1]);
+        }
+        endShape(CLOSE);
+      }
+    }
     this.renderSealFlashers();
 
     // render button frame
@@ -600,6 +694,7 @@ const PLAY_SCENE = {
     fill(DARK_COLOR);
     strokeWeight(5);
     this.renderPieces();
+    tooltip.render();
 
     let setMessage = false;
 
@@ -690,8 +785,8 @@ const PLAY_SCENE = {
   mouseClicked: function () {
     // placing a piece (hovering on placeable & no more flashers)
     if (this.hoveredPlaceable !== null) {
-      // cancel if still calculating placeables OR showing message OR game over
-      if (this.placeableGenIndex < 4 || this.gameEnded) {
+      // cancel if still calculating placeables OR not added last score OR game over
+      if (this.placeableGenIndex < 4 || this.isClearing || this.gameEnded) {
         return;
       }
       const flyer = this.pieces[this.selectedPieceIndex].flyer;

@@ -1,9 +1,10 @@
 const __skip__ = !!true;
 
-const SCORE_CHECK_AMOUNTS = [300, 1000, 2000, 4000, 10000];
+// chroma flame: 30000
+const SCORE_CHECK_AMOUNTS = [500, 2000, 4000, 7000, 10000];
 const TURNS_PER_CHECK = 10;
 const PIECE_TYPES_CHANCES = [10, 40]; // 1 shape, 2 shapes
-const SEAL_CHANCE = 0.2;
+const SEAL_CHANCE = 0.15;
 const CHROMA_CHANCE = 0.1;
 
 const BG_COLOR = 25;
@@ -38,6 +39,7 @@ const PLUS_DOTS = [];
 // TEXTURE
 const NOISE_SCALE = 0.012;
 let IMAGES_AMOUNT = 3;
+const SHAPES_COLORS_NAMES = ["GREEN", "ORANGE", "BLUE", "PINK"];
 const SHAPES_COLORS = [
   // green
   [
