@@ -11,7 +11,10 @@ const PIECE_TYPES = [
 function generatePiece(pieceIndex) {
   const randomNum = random(100);
   let shapesCountIndex;
-  if (randomNum < PIECE_TYPES_CHANCES[0] && turnsCount > 0) {
+  if (
+    randomNum < PIECE_TYPES_CHANCES[0] &&
+    (scoreCheckIndex > 0 || PLAY_SCENE.turnsLeft < 10)
+  ) {
     shapesCountIndex = 0;
   } else if (randomNum < PIECE_TYPES_CHANCES[0] + PIECE_TYPES_CHANCES[1]) {
     shapesCountIndex = 1;
@@ -20,7 +23,7 @@ function generatePiece(pieceIndex) {
   }
   const type = getRandomItem(PIECE_TYPES[shapesCountIndex]);
 
-  // check if already have this type (unless it's 1 shape) //// keep?
+  // reroll if already have this type in hand (unless it's 1 shape)
   if (shapesCountIndex !== 0) {
     for (let i = 0; i < PLAY_SCENE.pieces.length; i++) {
       if (i === pieceIndex) continue;
@@ -281,10 +284,7 @@ function generatePlaceables() {
         break;
       }
     }
-    if (outOfSpace) {
-      PLAY_SCENE.outOfSpace = outOfSpace;
-      //// trigger lost
-    }
+    PLAY_SCENE.outOfSpace = outOfSpace;
     PLAY_SCENE.placeableGenIndex++;
   }
   if (PLAY_SCENE.placeableGenIndex >= 3) return;

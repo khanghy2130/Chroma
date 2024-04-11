@@ -1,5 +1,11 @@
 const __skip__ = !!true;
 
+const SCORE_CHECK_AMOUNTS = [300, 1000, 2000, 4000, 10000];
+const TURNS_PER_CHECK = 10;
+const PIECE_TYPES_CHANCES = [20, 35]; // 1 shape, 2 shapes
+const SEAL_CHANCE = 0.2;
+const CHROMA_CHANCE = 0.15;
+
 const BG_COLOR = 25;
 const DARK_COLOR = 12;
 const LIGHT_COLOR = 230;
@@ -16,13 +22,9 @@ const UPGRADE_DELAY = 40;
 const FLASHER_SPEED = 0.06;
 const CLEAR_RESULT_DURATION = 80;
 const TEXT_SHRINK_SPEED = 0.15;
-
-const SCORE_CHECK_AMOUNTS = [100, 200, 300, 400, 500];
+const GAME_MESSAGE_DURATION = 120;
 
 // GRID
-const PIECE_TYPES_CHANCES = [20, 35];
-const SEAL_CHANCE = 0.2;
-const CHROMA_CHANCE = 0.15;
 const SEAL_SIZE = 25;
 const SCALER = 42; // grid scale
 const SQUARE_SIZE = 85;
@@ -63,23 +65,23 @@ const ALL_SQUARES = [];
 const ALL_TRIANGLES = [];
 let ALL_SHAPES;
 let scene = "START"; // START / PLAY / END
+let touchCountdown = 0;
 
-let totalAdded = 0;
 let totalScore = 0;
+let totalAdded = 0;
 let multiplier = 2.0;
 let adder = 0;
 let temporaryAdder = 0;
+
 let scoreCheckIndex = 0;
-let turnsCount = 0;
 let animations = {
   resultDelay: 0,
+  scoreCheckCountDown: 0,
 
   scoreScaler: 1, // 1.5
   adderScaler: 1, // 2
   multScaler: 1, // 2
 };
-
-let touchCountdown = 0;
 
 function getShapeColor(colorIndex, shadeIndex) {
   let c = SHAPES_COLORS[colorIndex][shadeIndex];
@@ -90,7 +92,7 @@ function newRenderData(isSquare, colorIndex) {
   if (typeof colorIndex !== "number") colorIndex = randomInt(0, 4);
   const randomNum = random();
   let special = "NONE";
-  if (turnsCount > 0) {
+  if (scoreCheckIndex > 0 || PLAY_SCENE.turnsLeft < TURNS_PER_CHECK) {
     if (randomNum < SEAL_CHANCE) special = "X";
     else if (randomNum < SEAL_CHANCE + CHROMA_CHANCE) special = "CHROMA";
   }

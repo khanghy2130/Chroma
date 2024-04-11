@@ -30,6 +30,7 @@ function draw() {
   } else if (scene === "START") {
     START_SCENE.render();
   } else if (scene === "END") {
+    background("darkblue");
   }
 
   SCENE_TRANSITION.update();

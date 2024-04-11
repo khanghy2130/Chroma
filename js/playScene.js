@@ -1,4 +1,10 @@
 const PLAY_SCENE = {
+  scoreCheckMessage: "",
+  scoreCheckPending: false,
+  scoreCheckPassed: false,
+  gameEnded: false,
+  outOfSpace: false,
+  turnsLeft: 0,
   activePlusDot: null,
 
   // Piece: {type, flyer, placeables}
@@ -79,15 +85,20 @@ const PLAY_SCENE = {
     multiplier = 2.0;
     adder = 0;
     temporaryAdder = 0;
+
     scoreCheckIndex = 0;
-    turnsCount = 0;
     animations = {
       resultDelay: 0,
+      scoreCheckCountDown: 0,
       scoreScaler: 1,
       adderScaler: 1,
       multScaler: 1,
     };
 
+    this.scoreCheckMessage = "";
+    this.scoreCheckPending = false;
+    this.gameEnded = false;
+    this.outOfSpace = false;
     this.placeableGenIndex = 0;
     this.selectedPieceIndex = null;
     this.pendingCheckClear = false;
@@ -97,8 +108,10 @@ const PLAY_SCENE = {
     this.sealFlashers = [];
     this.multColorIndex = null;
     this.refreshMult();
+    this.turnsLeft = TURNS_PER_CHECK;
     this.plusDotIndex = null;
     this.refreshPlusDot();
+    this.lostByNoSpace = false;
 
     // make piece buttons
     if (this.pieceBtns.length === 0) {
@@ -295,6 +308,7 @@ const PLAY_SCENE = {
           PLACEABLE_DIAMETER * 1 // hover range
       ) {
         this.hoveredPlaceable = placeable;
+        cursor(HAND);
         break;
       }
     }
@@ -428,8 +442,21 @@ const PLAY_SCENE = {
     fill(LIGHT_COLOR);
     text(SCORE_CHECK_AMOUNTS[scoreCheckIndex], 525, 50);
     textSize(20);
-    fill(LIGHT_COLOR); /// flash when <2 left
-    text(10 - (turnsCount % 10) + " left", 525, 80);
+    // flash when less than 3 turns
+    fill(
+      this.turnsLeft < 3
+        ? color(LIGHT_COLOR, 150 + cos(frameCount * 5) * 100)
+        : LIGHT_COLOR
+    );
+    text(this.turnsLeft + " left", 525, 80);
+
+    // line through if score already met
+    if (totalScore >= SCORE_CHECK_AMOUNTS[scoreCheckIndex]) {
+      stroke(LIGHT_COLOR);
+      strokeWeight(3);
+      line(480, 47, 570, 47);
+      noStroke();
+    }
   },
 
   renderMultiplier: function () {
@@ -570,6 +597,50 @@ const PLAY_SCENE = {
     strokeWeight(5);
     this.renderPieces();
 
+    // render score check message
+    // if no clearing animations
+    if (
+      !this.pendingCheckClear &&
+      this.clearFlasers.length === 0 &&
+      this.numFlashers.length === 0
+    ) {
+      // if still updating the check
+      if (animations.scoreCheckCountDown > 0) {
+        if (this.scoreCheckPending) this.triggerScoreCheck();
+
+        noStroke();
+        fill(DARK_COLOR);
+        rect(300, 300, 500, 150);
+        fill(LIGHT_COLOR);
+        textSize(50);
+        text(this.scoreCheckMessage, 300, 300);
+        animations.scoreCheckCountDown--;
+        if (animations.scoreCheckCountDown === 0) {
+          // game is over?
+          if (this.gameEnded) {
+            if (this.lostByNoSpace) {
+              SCENE_TRANSITION.switchScene("END");
+            } else if (this.scoreCheckPassed) {
+              // won: clear all shapes
+              print("clear all shapes"); ////////// then go to end scene
+            } else {
+              SCENE_TRANSITION.switchScene("END");
+            }
+          } else {
+            scoreCheckIndex++;
+            this.turnsLeft = TURNS_PER_CHECK;
+          }
+        }
+      }
+      // trigger out of space after score check message
+      else if (this.outOfSpace && !this.gameEnded) {
+        this.lostByNoSpace = true;
+        this.gameEnded = true;
+        this.scoreCheckMessage = "Out of space";
+        animations.scoreCheckCountDown = GAME_MESSAGE_DURATION;
+      }
+    }
+
     ///// render frame rate
     fill(255);
     noStroke();
@@ -580,6 +651,14 @@ const PLAY_SCENE = {
   mouseClicked: function () {
     // placing a piece (hovering on placeable & no more flashers)
     if (this.hoveredPlaceable !== null) {
+      // cancel if still calculating placeables OR showing message OR game over
+      if (
+        this.placeableGenIndex < 4 ||
+        animations.scoreCheckCountDown > 0 ||
+        this.gameEnded
+      ) {
+        return;
+      }
       const flyer = this.pieces[this.selectedPieceIndex].flyer;
       // apply renderData to real shapes
       for (let i = 0; i < flyer.fShapes.length; i++) {
@@ -595,13 +674,21 @@ const PLAY_SCENE = {
           progress: 0,
         });
       }
+      // make new piece
       this.pieces[this.selectedPieceIndex] = generatePiece(
         this.selectedPieceIndex
       );
-      this.selectedPieceIndex = null;
+      for (let i = 0; i < this.pieces.length; i++) {
+        this.pieces[i].placeables = []; // clear all placeables
+      }
+      this.selectedPieceIndex = null; // deselect
       this.placeableGenIndex = 0; // trigger recalculate
       this.pendingCheckClear = true;
-      turnsCount++;
+      this.turnsLeft--;
+      if (this.turnsLeft === 0) {
+        this.scoreCheckPending = true;
+        animations.scoreCheckCountDown = GAME_MESSAGE_DURATION;
+      }
       return;
     }
 
@@ -612,8 +699,7 @@ const PLAY_SCENE = {
   },
 
   pieceBtnClicked: function (pieceIndex) {
-    // cancel if still calculating placeables
-    if (this.placeableGenIndex < 4 || this.outOfSpace) return;
+    if (this.gameEnded || animations.scoreCheckCountDown > 0) return;
     this.selectedPieceIndex =
       this.selectedPieceIndex !== pieceIndex ? pieceIndex : null;
   },
@@ -680,6 +766,21 @@ const PLAY_SCENE = {
       for (let i = 0; i < this.clearFlasers.length; i++) {
         this.clearFlasers[i].delay += UPGRADE_DELAY;
       }
+    }
+  },
+
+  triggerScoreCheck: function () {
+    this.scoreCheckPending = false;
+    this.scoreCheckPassed = totalScore >= SCORE_CHECK_AMOUNTS[scoreCheckIndex];
+    this.scoreCheckMessage = this.scoreCheckPassed
+      ? "Score check passed"
+      : "Score check failed";
+    // failed score check or is last check? game over
+    if (
+      !this.scoreCheckPassed ||
+      scoreCheckIndex === SCORE_CHECK_AMOUNTS.length - 1
+    ) {
+      this.gameEnded = true;
     }
   },
 };
