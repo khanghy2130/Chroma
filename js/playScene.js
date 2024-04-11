@@ -1,8 +1,7 @@
 const PLAY_SCENE = {
-  scoreCheckMessage: "",
-  scoreCheckPending: false,
-  scoreCheckPassed: false,
+  popupMessage: "",
   gameEnded: false,
+  finalClearAll: false,
   outOfSpace: false,
   turnsLeft: 0,
   activePlusDot: null,
@@ -14,6 +13,8 @@ const PLAY_SCENE = {
   hoveredPlaceable: null,
   placeableGenIndex: 0, // 3 would be done
 
+  isClearing: false,
+  pendingScoreCheck: false,
   pendingCheckClear: false,
   // {shape, progress(0 to 1)}
   placementFlashers: [],
@@ -95,23 +96,26 @@ const PLAY_SCENE = {
       multScaler: 1,
     };
 
-    this.scoreCheckMessage = "";
-    this.scoreCheckPending = false;
+    this.popupMessage = "";
     this.gameEnded = false;
+    this.finalClearAll = false;
     this.outOfSpace = false;
     this.placeableGenIndex = 0;
     this.selectedPieceIndex = null;
     this.pendingCheckClear = false;
+    this.pendingScoreCheck = false;
+    this.isClearing = false;
+
     this.placementFlashers = [];
     this.clearFlasers = [];
     this.numFlashers = [];
     this.sealFlashers = [];
+
     this.multColorIndex = null;
     this.refreshMult();
     this.turnsLeft = TURNS_PER_CHECK;
     this.plusDotIndex = null;
     this.refreshPlusDot();
-    this.lostByNoSpace = false;
 
     // make piece buttons
     if (this.pieceBtns.length === 0) {
@@ -315,6 +319,8 @@ const PLAY_SCENE = {
   },
 
   renderPlacedShapes: function () {
+    fill(DARK_COLOR);
+    strokeWeight(5);
     for (let i = 0; i < ALL_SHAPES.length; i++) {
       const shape = ALL_SHAPES[i];
       if (shape.renderData === null) continue;
@@ -375,6 +381,7 @@ const PLAY_SCENE = {
     if (this.pendingCheckClear && this.placementFlashers.length === 0) {
       this.pendingCheckClear = false;
       this.clearShapes();
+      if (this.turnsLeft === 0) this.pendingScoreCheck = true;
     }
     for (let i = this.clearFlasers.length - 1; i >= 0; i--) {
       const fl = this.clearFlasers[i];
@@ -496,13 +503,14 @@ const PLAY_SCENE = {
   },
 
   updateAnimations: function () {
-    // animations completed
+    // animations completed?
     if (animations.resultDelay-- === 0) {
       temporaryAdder = 0; // reset to base adder
       animations.adderScaler = 2;
       totalScore += totalAdded;
       animations.scoreScaler = 2;
       if (this.multIsActive) this.refreshMult();
+      this.isClearing = false;
     }
   },
 
@@ -528,8 +536,6 @@ const PLAY_SCENE = {
     generatePlaceables();
     this.checkHoverPlaceables();
     this.renderPlacementFlashers();
-    fill(DARK_COLOR);
-    strokeWeight(5);
     this.renderPlacedShapes();
 
     noStroke();
@@ -587,8 +593,6 @@ const PLAY_SCENE = {
     );
     this.renderSealFlashers();
 
-    /// render portals
-
     // render button frame
     for (let i = 0; i < 3; i++) {
       this.pieceBtns[i].render();
@@ -597,48 +601,83 @@ const PLAY_SCENE = {
     strokeWeight(5);
     this.renderPieces();
 
-    // render score check message
-    // if no clearing animations
-    if (
-      !this.pendingCheckClear &&
-      this.clearFlasers.length === 0 &&
-      this.numFlashers.length === 0
-    ) {
-      // if still updating the check
-      if (animations.scoreCheckCountDown > 0) {
-        if (this.scoreCheckPending) this.triggerScoreCheck();
+    let setMessage = false;
 
-        noStroke();
-        fill(DARK_COLOR);
-        rect(300, 300, 500, 150);
-        fill(LIGHT_COLOR);
-        textSize(50);
-        text(this.scoreCheckMessage, 300, 300);
-        animations.scoreCheckCountDown--;
-        if (animations.scoreCheckCountDown === 0) {
-          // game is over?
-          if (this.gameEnded) {
-            if (this.lostByNoSpace) {
-              SCENE_TRANSITION.switchScene("END");
-            } else if (this.scoreCheckPassed) {
-              // won: clear all shapes
-              print("clear all shapes"); ////////// then go to end scene
-            } else {
-              SCENE_TRANSITION.switchScene("END");
-            }
-          } else {
-            scoreCheckIndex++;
-            this.turnsLeft = TURNS_PER_CHECK;
-          }
+    // do score check & out of space check
+    if (this.pendingScoreCheck && !this.isClearing) {
+      this.pendingScoreCheck = false;
+      // enough score?
+      if (totalScore >= SCORE_CHECK_AMOUNTS[scoreCheckIndex]) {
+        this.popupMessage = "Score check passed";
+        setMessage = true;
+        // any more score checks? continue
+        if (scoreCheckIndex < SCORE_CHECK_AMOUNTS.length - 1) {
+          scoreCheckIndex++;
+          this.turnsLeft = TURNS_PER_CHECK;
+        }
+        // last check?
+        else {
+          this.gameEnded = true;
+          this.finalClearAll = true;
+        }
+      } else {
+        this.popupMessage = "Score check failed";
+        setMessage = true;
+        this.gameEnded = true;
+      }
+    }
+
+    // out of space check
+    if (this.outOfSpace && !this.gameEnded) {
+      this.gameEnded = true;
+      this.popupMessage = "Out of space";
+      setMessage = true;
+    }
+
+    // set message?
+    if (setMessage) animations.scoreCheckCountDown = GAME_MESSAGE_DURATION;
+    // render message
+    if (animations.scoreCheckCountDown > 0) {
+      let factor = 1;
+      if (animations.scoreCheckCountDown < GMAD) {
+        // intro animation
+        factor = animations.scoreCheckCountDown / GMAD;
+      } else if (
+        animations.scoreCheckCountDown >
+        GAME_MESSAGE_DURATION - GMAD
+      ) {
+        // outro animation
+        factor =
+          (GAME_MESSAGE_DURATION - animations.scoreCheckCountDown) / GMAD;
+      }
+      noStroke();
+      fill(DARK_COLOR, factor * 255);
+      rect(300, 200 + 50 * factor, 550, 100);
+      fill(LIGHT_COLOR, factor * 255);
+      textSize(40);
+      text(this.popupMessage, 300, 200 + 50 * factor);
+      animations.scoreCheckCountDown--;
+      // message finish?
+      if (animations.scoreCheckCountDown === 0) {
+        if (this.gameEnded && !this.finalClearAll) {
+          SCENE_TRANSITION.switchScene("END");
         }
       }
-      // trigger out of space after score check message
-      else if (this.outOfSpace && !this.gameEnded) {
-        this.lostByNoSpace = true;
-        this.gameEnded = true;
-        this.scoreCheckMessage = "Out of space";
-        animations.scoreCheckCountDown = GAME_MESSAGE_DURATION;
-      }
+    }
+
+    // final clear updates
+    if (this.finalClearAll && !this.finalClearAllStarted) {
+      this.clearShapes();
+      this.finalClearAllStarted = true;
+    }
+    if (
+      this.finalClearAllStarted &&
+      this.clearFlasers.length === 0 &&
+      animations.resultDelay < 0
+    ) {
+      this.finalClearAllStarted = false;
+      this.finalClearAll = false;
+      SCENE_TRANSITION.switchScene("END");
     }
 
     ///// render frame rate
@@ -652,11 +691,7 @@ const PLAY_SCENE = {
     // placing a piece (hovering on placeable & no more flashers)
     if (this.hoveredPlaceable !== null) {
       // cancel if still calculating placeables OR showing message OR game over
-      if (
-        this.placeableGenIndex < 4 ||
-        animations.scoreCheckCountDown > 0 ||
-        this.gameEnded
-      ) {
+      if (this.placeableGenIndex < 4 || this.gameEnded) {
         return;
       }
       const flyer = this.pieces[this.selectedPieceIndex].flyer;
@@ -685,10 +720,6 @@ const PLAY_SCENE = {
       this.placeableGenIndex = 0; // trigger recalculate
       this.pendingCheckClear = true;
       this.turnsLeft--;
-      if (this.turnsLeft === 0) {
-        this.scoreCheckPending = true;
-        animations.scoreCheckCountDown = GAME_MESSAGE_DURATION;
-      }
       return;
     }
 
@@ -699,7 +730,7 @@ const PLAY_SCENE = {
   },
 
   pieceBtnClicked: function (pieceIndex) {
-    if (this.gameEnded || animations.scoreCheckCountDown > 0) return;
+    if (this.gameEnded || this.outOfSpace) return;
     this.selectedPieceIndex =
       this.selectedPieceIndex !== pieceIndex ? pieceIndex : null;
   },
@@ -707,24 +738,37 @@ const PLAY_SCENE = {
   clearShapes: function () {
     const checkedShapes = {};
     const groups = [];
-    for (let i = 0; i < ALL_SHAPES.length; i++) {
-      if (
-        ALL_SHAPES[i].renderData === null ||
-        ALL_SHAPES[i].renderData.special === "CHROMA"
-      ) {
-        continue;
+    let clearedShapes = [];
+
+    // final clear (won) would clear all shapes
+    if (this.finalClearAll) {
+      for (let i = 0; i < ALL_SHAPES.length; i++) {
+        if (ALL_SHAPES[i].renderData !== null) {
+          clearedShapes.push(ALL_SHAPES[i]);
+        }
       }
-      checkShape(ALL_SHAPES[i], checkedShapes, groups, [], true);
+    }
+    // normal clearing
+    else {
+      for (let i = 0; i < ALL_SHAPES.length; i++) {
+        if (
+          ALL_SHAPES[i].renderData === null ||
+          ALL_SHAPES[i].renderData.special === "CHROMA"
+        ) {
+          continue;
+        }
+        checkShape(ALL_SHAPES[i], checkedShapes, groups, [], true);
+      }
+      for (let i = 0; i < groups.length; i++) {
+        const group = groups[i];
+        if (group.length >= 4) clearedShapes = clearedShapes.concat(group);
+      }
+      clearedShapes.sort(function (shapeA, shapeB) {
+        return shapeA.centerPos[0] - shapeB.centerPos[0];
+      });
     }
 
-    let clearedShapes = [];
-    for (let i = 0; i < groups.length; i++) {
-      const group = groups[i];
-      if (group.length >= 4) clearedShapes = clearedShapes.concat(group);
-    }
-    clearedShapes.sort(function (shapeA, shapeB) {
-      return shapeA.centerPos[0] - shapeB.centerPos[0];
-    });
+    this.isClearing = clearedShapes.length > 0;
 
     const chromas = [];
     let delayCounter = 0;
@@ -766,21 +810,6 @@ const PLAY_SCENE = {
       for (let i = 0; i < this.clearFlasers.length; i++) {
         this.clearFlasers[i].delay += UPGRADE_DELAY;
       }
-    }
-  },
-
-  triggerScoreCheck: function () {
-    this.scoreCheckPending = false;
-    this.scoreCheckPassed = totalScore >= SCORE_CHECK_AMOUNTS[scoreCheckIndex];
-    this.scoreCheckMessage = this.scoreCheckPassed
-      ? "Score check passed"
-      : "Score check failed";
-    // failed score check or is last check? game over
-    if (
-      !this.scoreCheckPassed ||
-      scoreCheckIndex === SCORE_CHECK_AMOUNTS.length - 1
-    ) {
-      this.gameEnded = true;
     }
   },
 };

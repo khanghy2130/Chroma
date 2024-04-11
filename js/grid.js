@@ -96,6 +96,9 @@ function makeShapesAndLines(core, N_CORE, skippedShapeIndex, SP) {
 
   // ALL SHAPES array
   ALL_SHAPES = ALL_SQUARES.concat(ALL_TRIANGLES);
+  ALL_SHAPES.sort(function (shapeA, shapeB) {
+    return shapeA.centerPos[0] - shapeB.centerPos[0];
+  });
 }
 
 // also push line into GRID_LINES

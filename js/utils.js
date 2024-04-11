@@ -2,9 +2,9 @@ const __skip__ = !!true;
 
 const SCORE_CHECK_AMOUNTS = [300, 1000, 2000, 4000, 10000];
 const TURNS_PER_CHECK = 10;
-const PIECE_TYPES_CHANCES = [20, 35]; // 1 shape, 2 shapes
+const PIECE_TYPES_CHANCES = [10, 40]; // 1 shape, 2 shapes
 const SEAL_CHANCE = 0.2;
-const CHROMA_CHANCE = 0.15;
+const CHROMA_CHANCE = 0.1;
 
 const BG_COLOR = 25;
 const DARK_COLOR = 12;
@@ -23,6 +23,7 @@ const FLASHER_SPEED = 0.06;
 const CLEAR_RESULT_DURATION = 80;
 const TEXT_SHRINK_SPEED = 0.15;
 const GAME_MESSAGE_DURATION = 120;
+const GMAD = 10; // game message animation duration
 
 // GRID
 const SEAL_SIZE = 25;
