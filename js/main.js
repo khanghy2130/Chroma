@@ -8,7 +8,6 @@ function setup() {
   }
 
   // configs
-  ///frameRate(30); ///
   pixelDensity(1); // nKA
   rectMode(CENTER);
   imageMode(CENTER);
@@ -30,7 +29,7 @@ function draw() {
   } else if (scene === "START") {
     START_SCENE.render();
   } else if (scene === "END") {
-    background("darkblue");
+    END_SCENE.render();
   }
 
   SCENE_TRANSITION.update();
@@ -46,5 +45,6 @@ function touchEnded() {
   } else if (scene === "START") {
     START_SCENE.mouseClicked();
   } else if (scene === "END") {
+    END_SCENE.mouseClicked();
   }
 }

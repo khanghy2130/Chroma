@@ -11,6 +11,7 @@ const PLAY_SCENE = {
   pieceBtns: [],
   selectedPieceIndex: null,
   hoveredPlaceable: null,
+  confirmHoveredPlaceable: null, // for touchscreen
   placeableGenIndex: 0, // 3 would be done
 
   isClearing: false,
@@ -81,6 +82,8 @@ const PLAY_SCENE = {
   },
 
   initializeGame: function () {
+    startTime = Date.now(); // timer
+    timeElapsed = null;
     totalAdded = 0;
     totalScore = 0;
     multiplier = 2.0;
@@ -105,6 +108,7 @@ const PLAY_SCENE = {
     this.pendingCheckClear = false;
     this.pendingScoreCheck = false;
     this.isClearing = false;
+    this.confirmHoveredPlaceable = null;
 
     this.placementFlashers = [];
     this.clearFlasers = [];
@@ -506,8 +510,10 @@ const PLAY_SCENE = {
       tooltip.set(
         `SCORE CHECK #${scoreCheckIndex + 1}: get\n${
           SCORE_CHECK_AMOUNTS[scoreCheckIndex]
-        } score before\n${this.turnsLeft} turns. Pass 5\nscore checks to win.`,
-        [235, 110]
+        } score to pass,\n${
+          this.turnsLeft
+        } turns remaining.\nPass 5 score checks\nto win.`,
+        [230, 130]
       );
     }
   },
@@ -535,7 +541,7 @@ const PLAY_SCENE = {
         )} all\nscore gained when\nclearing ${
           SHAPES_COLORS_NAMES[this.multColorIndex]
         } shapes.\nChange color after.`,
-        [250, 110]
+        [240, 110]
       );
     }
   },
@@ -559,7 +565,7 @@ const PLAY_SCENE = {
     ) {
       tooltip.set(
         "ADDER: Each shape cleared\ntemporarily +10 ADDER.\n(extra score for more\nshapes cleared in 1 turn)",
-        [300, 110]
+        [290, 110]
       );
     }
   },
@@ -675,7 +681,7 @@ const PLAY_SCENE = {
         [230, 85]
       );
       noStroke();
-      fill(255, 30 + cos(frameCount * 6) * 30);
+      fill(255, 30 + cos(frameCount * 7) * 30);
       for (let i = 0; i < this.plusDot.shapes.length; i++) {
         const points = this.plusDot.shapes[i].points;
         beginShape();
@@ -694,6 +700,16 @@ const PLAY_SCENE = {
     fill(DARK_COLOR);
     strokeWeight(5);
     this.renderPieces();
+
+    // show confirm
+    if (START_SCENE.touchscreenOn && this.confirmHoveredPlaceable !== null) {
+      if (this.confirmHoveredPlaceable !== this.hoveredPlaceable) {
+        this.confirmHoveredPlaceable = null;
+      } else {
+        tooltip.set("Tap it again to place.", [250, 40]);
+      }
+    }
+
     tooltip.render();
 
     let setMessage = false;
@@ -747,7 +763,7 @@ const PLAY_SCENE = {
       }
       noStroke();
       fill(DARK_COLOR, factor * 255);
-      rect(300, 200 + 50 * factor, 550, 100);
+      rect(300, 200 + 50 * factor, 550, 60);
       fill(LIGHT_COLOR, factor * 255);
       textSize(40);
       text(this.popupMessage, 300, 200 + 50 * factor);
@@ -789,6 +805,15 @@ const PLAY_SCENE = {
       if (this.placeableGenIndex < 4 || this.isClearing || this.gameEnded) {
         return;
       }
+
+      if (START_SCENE.touchscreenOn) {
+        if (this.confirmHoveredPlaceable === null) {
+          this.confirmHoveredPlaceable = this.hoveredPlaceable;
+          return;
+        }
+        this.confirmHoveredPlaceable = null;
+      }
+
       const flyer = this.pieces[this.selectedPieceIndex].flyer;
       // apply renderData to real shapes
       for (let i = 0; i < flyer.fShapes.length; i++) {

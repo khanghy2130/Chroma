@@ -69,6 +69,8 @@ const ALL_TRIANGLES = [];
 let ALL_SHAPES;
 let scene = "START"; // START / PLAY / END
 let touchCountdown = 0;
+let startTime;
+let timeElapsed;
 
 let totalScore = 0;
 let totalAdded = 0;
