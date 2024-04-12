@@ -83,7 +83,6 @@ const PLAY_SCENE = {
 
   initializeGame: function () {
     startTime = Date.now(); // timer
-    timeElapsed = null;
     totalAdded = 0;
     totalScore = 0;
     multiplier = 2.0;
@@ -513,7 +512,7 @@ const PLAY_SCENE = {
         } score to pass,\n${
           this.turnsLeft
         } turns remaining.\nPass 5 score checks\nto win.`,
-        [230, 130]
+        [230, 140]
       );
     }
   },
@@ -762,11 +761,11 @@ const PLAY_SCENE = {
           (GAME_MESSAGE_DURATION - animations.scoreCheckCountDown) / GMAD;
       }
       noStroke();
-      fill(DARK_COLOR, factor * 255);
-      rect(300, 200 + 50 * factor, 550, 60);
+      fill(DARK_COLOR);
+      rect(300, 250, width, 100 * factor);
       fill(LIGHT_COLOR, factor * 255);
       textSize(40);
-      text(this.popupMessage, 300, 200 + 50 * factor);
+      text(this.popupMessage, 300, 250);
       animations.scoreCheckCountDown--;
       // message finish?
       if (animations.scoreCheckCountDown === 0) {

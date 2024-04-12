@@ -1,6 +1,5 @@
 const __skip__ = !!true;
 
-// chroma flame: 30000
 const SCORE_CHECK_AMOUNTS = [500, 2000, 4000, 7000, 10000];
 const TURNS_PER_CHECK = 10;
 const PIECE_TYPES_CHANCES = [10, 40]; // 1 shape, 2 shapes
@@ -24,7 +23,7 @@ const FLASHER_SPEED = 0.06;
 const CLEAR_RESULT_DURATION = 80;
 const TEXT_SHRINK_SPEED = 0.15;
 const GAME_MESSAGE_DURATION = 120;
-const GMAD = 10; // game message animation duration
+const GMAD = 20; // game message animation duration
 
 // GRID
 const SEAL_SIZE = 25;
@@ -69,8 +68,7 @@ const ALL_TRIANGLES = [];
 let ALL_SHAPES;
 let scene = "START"; // START / PLAY / END
 let touchCountdown = 0;
-let startTime;
-let timeElapsed;
+let startTime = 0;
 
 let totalScore = 0;
 let totalAdded = 0;
