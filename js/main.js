@@ -19,9 +19,6 @@ function setup() {
 
   TEXTURE_LOADER.createMasks();
   START_SCENE.titleSetup();
-
-  ///////////
-  END_SCENE.initialize();
 }
 
 function draw() {

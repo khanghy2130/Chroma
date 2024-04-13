@@ -40,7 +40,8 @@ const SCENE_TRANSITION = {
         this.nextScene = null;
         this.progress = 0;
         this.isClosing = false;
-        if (scene === "END") END_SCENE.initialize();
+        if (scene === "PLAY") PLAY_SCENE.initializeGame();
+        else if (scene === "END") END_SCENE.initialize();
       }
     }
   },

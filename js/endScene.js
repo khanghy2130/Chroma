@@ -4,11 +4,10 @@ const FLAME_THRESHOLDS = [
   [1000, [227, 230, 70], [227, 230, 70]],
   [3000, [0, 0, 0], [60, 200, 60]],
   [6000, [0, 0, 0], [46, 196, 255]],
-  [10000, [0, 0, 0], [238, 48, 255]],
-  [15000, [255, 255, 255], [0, 0, 0]],
-  [20000, [145, 71, 255], [0, 0, 0]],
-  [25000, [255, 5, 5], [0, 0, 0]],
-  [30000, [255, 255, 255], [255, 255, 255]],
+  [9000, [0, 0, 0], [238, 48, 255]],
+  [13000, [145, 71, 255], [0, 0, 0]],
+  [16000, [255, 5, 5], [0, 0, 0]],
+  [20000, [255, 255, 255], [255, 255, 255]],
 ];
 
 const FLAME_STARTING_DURATION = 50; // ms
@@ -29,8 +28,29 @@ const END_SCENE = {
 
   progressCountUpMax: 0,
   progressCountUp: 0,
+  shrinkProgress: 0, // 1 to 0
+  afterScoreProgress: 0,
+  replayButton: new Btn(
+    480,
+    350,
+    150,
+    60,
+    function (x, y) {
+      textSize(24);
+      noStroke();
+      fill(LIGHT_COLOR);
+      text("Play again", x, y);
+    },
+    () => {
+      SCENE_TRANSITION.switchScene("PLAY");
+    }
+  ),
 
   initialize: function () {
+    // reset button
+    this.replayButton.isHovered = false;
+    this.replayButton.glow = 1;
+
     this.timePlayed = null;
     this.targetScorePos = [width / 2, height / 2];
     this.scorePos = [width / 2, height / 2];
@@ -39,6 +59,17 @@ const END_SCENE = {
 
     this.progressCountUpMax = FLAME_STARTING_DURATION;
     this.progressCountUp = 0;
+    this.shrinkProgress = 0;
+    this.afterScoreProgress = 0;
+
+    // set time played
+    let timeElapsed = Date.now() - startTime;
+    let minute = floor(timeElapsed / 60000);
+    let sec = floor((timeElapsed % 60000) / 1000) + "";
+    if (sec.length === 1) {
+      sec = "0" + sec;
+    }
+    this.timePlayed = `Time played\n${minute}:${sec}`;
   },
 
   render: function () {
@@ -74,13 +105,19 @@ const END_SCENE = {
     }
 
     push(); // pushMatrix(); // KA
-    translate(this.scorePos[0], this.scorePos[1]);
     // update pos
     if (this.doneWithScore) {
       this.targetScorePos[0] = 200;
     }
     this.scorePos[0] += (this.targetScorePos[0] - this.scorePos[0]) * 0.1;
     this.scorePos[1] += (this.targetScorePos[1] - this.scorePos[1]) * 0.1;
+    // update shrink
+    if (this.shrinkProgress > 0) {
+      this.shrinkProgress = max(0, this.shrinkProgress - 0.08);
+    }
+
+    translate(this.scorePos[0], this.scorePos[1]);
+    scale(1 + this.shrinkProgress * 0.4);
 
     // render score bg
     const FLAME_PIXEL_SIZE = FLAME_WIDTH / FLAME_PIXEL_COUNT;
@@ -104,6 +141,7 @@ const END_SCENE = {
       if (isLastFlame) {
         colorMode(HSB, 255);
         c1 = color((x / FLAME_PIXEL_COUNT) * 255, 255, 255);
+        c2 = color(((frameCount % 360) / 360) * 255, 100, 255);
         colorMode(RGB, 255);
       }
       for (let y = 0; y < flameHeightCount; y++) {
@@ -154,10 +192,11 @@ const END_SCENE = {
     pop(); // popMatrix(); // KA
 
     // update score & flames when not transitioning
-    if (SCENE_TRANSITION.progress === 1 && !this.doneWithScore) {
+    if (SCENE_TRANSITION.progress >= 1 && !this.doneWithScore) {
       if (this.progressCountUp === this.progressCountUpMax) {
         if (this.flameIndex < FLAME_THRESHOLDS.length - 1) {
           this.flameIndex++;
+          this.shrinkProgress = 1;
         }
         this.progressCountUpMax =
           FLAME_STARTING_DURATION + this.flameIndex * FLAME_ADDITIONAL_DURATION;
@@ -168,18 +207,30 @@ const END_SCENE = {
       this.progressCountUp++;
     }
 
-    // set timer if not already
-    if (this.timePlayed === null) {
-      let timeElapsed = Date.now() - startTime;
-      let minute = floor(timeElapsed / 60000);
-      let sec = floor((timeElapsed % 60000) / 1000) + "";
-      if (sec.length === 1) {
-        sec = "0" + sec;
-      }
-      this.timePlayed = `Time played:\n${minute}:${sec}`;
+    if (this.doneWithScore) {
+      this.afterScoreProgress = min(1, this.afterScoreProgress + 0.01);
+
+      // render time played
+      noStroke();
+      textSize(easeOutElastic(this.afterScoreProgress) * 28);
+      fill(LIGHT_COLOR);
+      text(this.timePlayed, 480, 250);
+
+      this.replayButton.render();
     }
   },
   mouseClicked: function () {
-    print(this.timePlayed);
+    if (this.doneWithScore && this.replayButton.isHovered) {
+      this.replayButton.clicked();
+    }
   },
 };
+
+function easeOutElastic(x) {
+  const c4 = (2 * Math.PI) / 3;
+  return x === 0
+    ? 0
+    : x === 1
+    ? 1
+    : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
+}

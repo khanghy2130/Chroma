@@ -2,9 +2,9 @@ const __skip__ = !!true;
 
 const SCORE_CHECK_AMOUNTS = [500, 2000, 4000, 7000, 10000];
 const TURNS_PER_CHECK = 10;
-const PIECE_TYPES_CHANCES = [10, 40]; // 1 shape, 2 shapes
-const SEAL_CHANCE = 0.15;
-const CHROMA_CHANCE = 0.1;
+const PIECE_TYPES_CHANCES = [15, 40]; // 1 shape, 2 shapes
+const SEAL_CHANCE = 0.16;
+const CHROMA_CHANCE = 0.11;
 
 const BG_COLOR = 25;
 const DARK_COLOR = 12;

@@ -158,6 +158,11 @@ const PLAY_SCENE = {
       this.pieces[i] = generatePiece(i);
     }
 
+    // clear board
+    for (let i = 0; i < ALL_SHAPES.length; i++) {
+      ALL_SHAPES[i].renderData = null;
+    }
+
     // spawn shapes on board
     for (let i = 0; i < SHAPES_COLORS.length; i++) {
       let randomShape = null;
@@ -242,7 +247,7 @@ const PLAY_SCENE = {
           this.placeableGenIndex > 3 &&
           this.pieces[pieceIndices[i]].placeables.length === 0
         ) {
-          tooltip.set("No possible placement.", [260, 50]);
+          tooltip.set("No possible placement.", [265, 50]);
         }
 
         // grow to normal scaling
@@ -386,7 +391,7 @@ const PLAY_SCENE = {
         ) {
           tooltip.set(
             "This shape matches color\nwith all adjacents.",
-            [275, 60]
+            [280, 60]
           );
         }
       }
@@ -466,10 +471,10 @@ const PLAY_SCENE = {
     textSize(40 * animations.scoreScaler);
     animations.scoreScaler = max(1, animations.scoreScaler - TEXT_SHRINK_SPEED);
     fill(DARK_COLOR);
-    rect(75, 55, 110, 60, 10);
+    rect(75, 55, 130, 60, 10);
     fill(LIGHT_COLOR);
     text(
-      floor(animations.resultDelay > 0 ? "+" + totalAdded : totalScore),
+      animations.resultDelay > 0 ? "+" + floor(totalAdded) : floor(totalScore),
       75,
       57
     );
@@ -509,10 +514,8 @@ const PLAY_SCENE = {
       tooltip.set(
         `SCORE CHECK #${scoreCheckIndex + 1}: get\n${
           SCORE_CHECK_AMOUNTS[scoreCheckIndex]
-        } score to pass,\n${
-          this.turnsLeft
-        } turns remaining.\nPass 5 score checks\nto win.`,
-        [230, 140]
+        } score to pass,\n${this.turnsLeft} turns remaining.`,
+        [235, 140]
       );
     }
   },
@@ -540,7 +543,7 @@ const PLAY_SCENE = {
         )} all\nscore gained when\nclearing ${
           SHAPES_COLORS_NAMES[this.multColorIndex]
         } shapes.\nChange color after.`,
-        [240, 110]
+        [245, 110]
       );
     }
   },
@@ -564,7 +567,7 @@ const PLAY_SCENE = {
     ) {
       tooltip.set(
         "ADDER: Each shape cleared\ntemporarily +10 ADDER.\n(extra score for more\nshapes cleared in 1 turn)",
-        [290, 110]
+        [295, 110]
       );
     }
   },
@@ -677,7 +680,7 @@ const PLAY_SCENE = {
     ) {
       tooltip.set(
         "Completely surround\nthis to permanently\n+10 ADDER.",
-        [230, 85]
+        [235, 85]
       );
       noStroke();
       fill(255, 30 + cos(frameCount * 7) * 30);
@@ -705,7 +708,7 @@ const PLAY_SCENE = {
       if (this.confirmHoveredPlaceable !== this.hoveredPlaceable) {
         this.confirmHoveredPlaceable = null;
       } else {
-        tooltip.set("Tap it again to place.", [250, 40]);
+        tooltip.set("Tap it again to place.", [255, 40]);
       }
     }
 

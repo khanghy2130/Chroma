@@ -109,9 +109,8 @@ const START_SCENE = {
         text("Play", x, y);
       },
       () => {
-        SCENE_TRANSITION.switchScene("PLAY");
         initializeGridData();
-        PLAY_SCENE.initializeGame();
+        SCENE_TRANSITION.switchScene("PLAY");
       }
     );
     this.buttons.tutorialToggle = new Btn(
