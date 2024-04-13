@@ -82,6 +82,8 @@ const PLAY_SCENE = {
   },
 
   initializeGame: function () {
+    TUTORIAL.index = 0;
+
     startTime = Date.now(); // timer
     totalAdded = 0;
     totalScore = 0;
@@ -515,7 +517,7 @@ const PLAY_SCENE = {
         `SCORE CHECK #${scoreCheckIndex + 1}: get\n${
           SCORE_CHECK_AMOUNTS[scoreCheckIndex]
         } score to pass,\n${this.turnsLeft} turns remaining.`,
-        [235, 140]
+        [235, 90]
       );
     }
   },
@@ -793,11 +795,7 @@ const PLAY_SCENE = {
       SCENE_TRANSITION.switchScene("END");
     }
 
-    ///// render frame rate
-    fill(255);
-    noStroke();
-    textSize(20);
-    text(frameRate() > 55, 300, 585);
+    TUTORIAL.update();
   },
 
   mouseClicked: function () {
@@ -855,6 +853,9 @@ const PLAY_SCENE = {
     if (this.gameEnded || this.outOfSpace) return;
     this.selectedPieceIndex =
       this.selectedPieceIndex !== pieceIndex ? pieceIndex : null;
+    if (START_SCENE.tutorialOn && TUTORIAL.index === 0) {
+      TUTORIAL.popupProgress = 1;
+    }
   },
 
   clearShapes: function () {
@@ -971,3 +972,79 @@ function checkShape(
     }
   }
 }
+
+const TUTORIAL = {
+  index: 0,
+  popupAlpha: 1,
+  popupProgress: 0,
+  x: 300,
+  y: 40,
+  h: 80,
+  msg: null,
+  update: function () {
+    if (!START_SCENE.tutorialOn || this.index > 3) {
+      return;
+    }
+    const PS = PLAY_SCENE;
+    switch (this.index) {
+      // select piece and place
+      case 0:
+        // didn't place a piece yet?
+        if (PS.turnsLeft === TURNS_PER_CHECK) {
+          if (PS.selectedPieceIndex === null) {
+            this.msg = "Welcome! Select a piece below.";
+          } else {
+            this.msg = "Move it to a yellow dot\nthen click to place.";
+          }
+        } else {
+          this.nextTutorial();
+        }
+        break;
+      case 1:
+        this.msg =
+          "Link 4 or more shapes with the\nsame color together to clear them.";
+        // close when score
+        if (totalScore !== 0) {
+          this.nextTutorial();
+        }
+        break;
+      case 2:
+        this.msg = "Hover on stuffs to\nlearn more about them.";
+        // close when select piece
+        if (PLAY_SCENE.selectedPieceIndex !== null) {
+          this.nextTutorial();
+        }
+        break;
+      case 3:
+        this.msg = "Pass 5 score checks to win.\nGood luck!";
+        // close when place
+        if (PLAY_SCENE.placementFlashers.length !== 0) {
+          this.nextTutorial();
+        }
+        break;
+    }
+    // check hover to hide
+    if (mouseY < this.y + this.h / 2) {
+      this.popupAlpha = max(0, this.popupAlpha - 0.2);
+    } else {
+      this.popupAlpha = min(1, this.popupAlpha + 0.2);
+    }
+    noStroke();
+    fill(0, this.popupAlpha * 220);
+    rect(this.x, this.y, width, this.h);
+    fill(LIGHT_COLOR, this.popupAlpha * 255);
+    textSize(24);
+    text(this.msg, this.x, this.y);
+    if (this.popupProgress > 0) {
+      fill(255, this.popupProgress * 120);
+      rect(this.x, this.y, width, this.h);
+      this.popupProgress = max(0, this.popupProgress - 0.05);
+    }
+  },
+  nextTutorial: function () {
+    if (this.index < 3) {
+      this.popupProgress = 1;
+    }
+    this.index++;
+  },
+};

@@ -20,6 +20,7 @@ const FLAME_NOISE_SCALE = 0.16;
 const FLAME_SPEED_FACTOR = 0.1;
 
 const END_SCENE = {
+  preventInfiniteLoopCounter: 0,
   timePlayed: null,
   targetScorePos: null, // move scorePos to here
   scorePos: null,
@@ -33,7 +34,7 @@ const END_SCENE = {
   replayButton: new Btn(
     480,
     350,
-    150,
+    170,
     60,
     function (x, y) {
       textSize(24);
@@ -42,6 +43,7 @@ const END_SCENE = {
       text("Play again", x, y);
     },
     () => {
+      START_SCENE.tutorialOn = false;
       SCENE_TRANSITION.switchScene("PLAY");
     }
   ),
@@ -51,6 +53,7 @@ const END_SCENE = {
     this.replayButton.isHovered = false;
     this.replayButton.glow = 1;
 
+    this.preventInfiniteLoopCounter = 0;
     this.timePlayed = null;
     this.targetScorePos = [width / 2, height / 2];
     this.scorePos = [width / 2, height / 2];
@@ -205,6 +208,10 @@ const END_SCENE = {
         if (displayScore >= totalScore) this.doneWithScore = true;
       }
       this.progressCountUp++;
+      // force exit after around 16.7 seconds
+      if (this.preventInfiniteLoopCounter++ > 600) {
+        this.doneWithScore = true;
+      }
     }
 
     if (this.doneWithScore) {

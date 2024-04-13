@@ -1,4 +1,4 @@
-const __skip__ = !!true;
+const __skip__ = !true;
 
 const SCORE_CHECK_AMOUNTS = [500, 2000, 4000, 7000, 10000];
 const TURNS_PER_CHECK = 10;
