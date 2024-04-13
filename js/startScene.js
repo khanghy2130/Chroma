@@ -4,6 +4,7 @@ const TITLE_DATA =
 const START_SCENE = {
   tutorialOn: true,
   touchscreenOn: false,
+  loadingTextProgress: 1,
 
   TDArray: TITLE_DATA.split("?").map(function (s) {
     return s.split(",").map(function (n) {
@@ -47,6 +48,14 @@ const START_SCENE = {
           break;
         }
       }
+    }
+    // render loading text
+    else if (this.loadingTextProgress > 0) {
+      noStroke();
+      textSize(30 + this.loadingTextProgress * 5);
+      fill(255, (1 - this.loadingTextProgress) * 140);
+      text("Loading", 300, 450);
+      this.loadingTextProgress = max(0, this.loadingTextProgress - 0.1);
     }
 
     // is still loading texture?
