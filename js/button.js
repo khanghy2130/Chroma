@@ -9,6 +9,7 @@ class Btn {
     this.customRender = customRender;
     this.clicked = () => {
       this.glow = 1;
+      _playSound(sounds.buttonClicked, 4);
       clicked();
     };
 

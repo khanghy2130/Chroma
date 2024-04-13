@@ -444,7 +444,7 @@ const PLAY_SCENE = {
         fl.hasCleared = true;
         fl.shape.renderData = null;
         this.triggerClear();
-        /// clear sound here
+        _playSound(sounds.shapeCleared, temporaryAdder * 0.1);
         this.numFlashers.push({
           pos: fl.shape.centerPos,
           addedScore:
@@ -840,6 +840,7 @@ const PLAY_SCENE = {
       this.placeableGenIndex = 0; // trigger recalculate
       this.pendingCheckClear = true;
       this.turnsLeft--;
+      _playSound(sounds.piecePlaced, 2);
       return;
     }
 
@@ -930,6 +931,7 @@ const PLAY_SCENE = {
     }
     totalAdded = 0; // reset added sum from last turn
     if (applyExtraDelay) {
+      _playSound(sounds.piecePlaced, 6);
       for (let i = 0; i < this.clearFlasers.length; i++) {
         this.clearFlasers[i].delay += UPGRADE_DELAY;
       }

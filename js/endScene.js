@@ -198,6 +198,7 @@ const END_SCENE = {
     if (SCENE_TRANSITION.progress >= 1 && !this.doneWithScore) {
       if (this.progressCountUp === this.progressCountUpMax) {
         if (this.flameIndex < FLAME_THRESHOLDS.length - 1) {
+          _playSound(sounds.piecePlaced, 2);
           this.flameIndex++;
           this.shrinkProgress = 1;
         }

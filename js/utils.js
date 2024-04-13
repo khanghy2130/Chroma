@@ -63,6 +63,7 @@ const SHAPES_COLORS = [
 ];
 
 // CONTROLS
+const sounds = {};
 const ALL_SQUARES = [];
 const ALL_TRIANGLES = [];
 let ALL_SHAPES;
