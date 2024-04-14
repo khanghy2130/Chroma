@@ -10,6 +10,7 @@ SHAPE: null | {
   shapeID: string,
   shapeIndex: (index in core.shapes)
   nShapes[3 | 4] (clockwise order) (neighbors)
+  portalNeighbor: null | Shape
   points[3 | 4]
   
   centerPos
@@ -299,4 +300,32 @@ function initializeGridData() {
       PLUS_DOTS.push(posCounter); // add this plus dot if has 5 shapes
     }
   }
+
+  // make portal lines
+  PORTAL_LINES = [
+    // [line index, shape index]
+    [27, 0],
+    [63, 2],
+    [7, 5],
+    [61, 10],
+    [60, 16],
+    [62, 22],
+    [18, 27],
+    [64, 32],
+    [43, 34],
+    [46, 35],
+    [66, 33],
+    [56, 30],
+    [68, 25],
+    [59, 19],
+    [67, 13],
+    [50, 8],
+    [65, 3],
+    [30, 1],
+  ].map(function (item) {
+    return {
+      gridLine: GRID_LINES[item[0]],
+      shape: ALL_SHAPES[item[1]],
+    };
+  });
 }

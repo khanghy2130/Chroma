@@ -34,6 +34,8 @@ const PLACEABLE_DIAMETER = 20;
 const CORES = [];
 const GRID_LINES = [];
 const PLUS_DOTS = [];
+let PORTAL_LINES; // {line, shape, isActive}
+let activePortalLines = []; // for render
 
 // TEXTURE
 const NOISE_SCALE = 0.012;
@@ -131,4 +133,27 @@ function nsi(n) {
   while (n < 0) n += 4;
   while (n >= 4) n -= 4;
   return n;
+}
+
+// code from https://stackoverflow.com/a/34474547
+function lineIsHovered(point1, point2) {
+  const dxL = point2[0] - point1[0];
+  const dyL = point2[1] - point1[1];
+  const dxP = mouseX - point1[0];
+  const dyP = mouseY - point1[1];
+
+  const squareLen = dxL * dxL + dyL * dyL;
+  const dotProd = dxP * dxL + dyP * dyL;
+  const crossProd = dyP * dxL - dxP * dyL;
+  const distance = Math.abs(crossProd) / Math.sqrt(squareLen);
+  return dotProd >= 0 && dotProd <= squareLen && distance < 7; // line width here
+}
+function getPortalLine(index) {
+  let realIndex = index;
+  if (index < 0) {
+    realIndex = index + PORTAL_LINES.length;
+  } else if (index >= PORTAL_LINES.length) {
+    realIndex = index - PORTAL_LINES.length;
+  }
+  return PORTAL_LINES[realIndex];
 }

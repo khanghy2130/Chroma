@@ -122,7 +122,7 @@ const PLAY_SCENE = {
     this.plusDotIndex = null;
     this.refreshPlusDot();
 
-    // make piece buttons
+    // make piece buttons (if no pieces)
     if (this.pieceBtns.length === 0) {
       const btnWidth = width / 3;
       const btnHeight = 130;
@@ -160,9 +160,17 @@ const PLAY_SCENE = {
       this.pieces[i] = generatePiece(i);
     }
 
-    // clear board
+    // reset each shape
     for (let i = 0; i < ALL_SHAPES.length; i++) {
-      ALL_SHAPES[i].renderData = null;
+      const shape = ALL_SHAPES[i];
+      shape.renderData = null;
+      if (shape.portalNeighbor) shape.portalNeighbor = null;
+    }
+
+    // reset portal lines
+    activePortalLines = [];
+    for (let i = 0; i < PORTAL_LINES.length; i++) {
+      PORTAL_LINES[i].isActive = false;
     }
 
     // spawn shapes on board
@@ -182,6 +190,53 @@ const PLAY_SCENE = {
         }
       }
       randomShape.renderData = newRenderData(shapeIsSquare(randomShape), i);
+    }
+  },
+
+  spawnPortal: function () {
+    // infinite-loop protect loop
+    for (let ilp = 0; ilp < 1000; ilp++) {
+      const PLIndex = randomInt(0, PORTAL_LINES.length);
+      const thisPL = getPortalLine(PLIndex);
+      // skip if this portal is already active
+      if (thisPL.isActive) {
+        continue;
+      }
+      // chance to skip if 1 of adjacent portals is also active
+      else if (
+        getPortalLine(PLIndex - 1).isActive ||
+        getPortalLine(PLIndex + 1).isActive
+      ) {
+        if (random() < 0.8) {
+          continue;
+        }
+      }
+      const parnerPL = getPortalLine(PLIndex + 9); // plus half of total portals
+
+      thisPL.isActive = true;
+      parnerPL.isActive = true;
+      activePortalLines.push(thisPL);
+      activePortalLines.push(parnerPL);
+      thisPL.shape.portalNeighbor = parnerPL.shape;
+      parnerPL.shape.portalNeighbor = thisPL.shape;
+      // spawn flashers
+      for (let i = 0; i <= 1; i += 0.2) {
+        this.addSealFlasher([
+          thisPL.gridLine[1][0] +
+            (thisPL.gridLine[0][0] - thisPL.gridLine[1][0]) * i,
+          thisPL.gridLine[1][1] +
+            (thisPL.gridLine[0][1] - thisPL.gridLine[1][1]) * i,
+        ]);
+      }
+      for (let i = 0; i <= 1; i += 0.2) {
+        this.addSealFlasher([
+          parnerPL.gridLine[1][0] +
+            (parnerPL.gridLine[0][0] - parnerPL.gridLine[1][0]) * i,
+          parnerPL.gridLine[1][1] +
+            (parnerPL.gridLine[0][1] - parnerPL.gridLine[1][1]) * i,
+        ]);
+      }
+      break;
     }
   },
 
@@ -480,6 +535,20 @@ const PLAY_SCENE = {
       75,
       57
     );
+
+    // tooltip
+    if (
+      PLAY_SCENE.selectedPieceIndex === null &&
+      mouseX > 10 &&
+      mouseX < 140 &&
+      mouseY > 25 &&
+      mouseY < 85
+    ) {
+      tooltip.set(
+        "Psst... when you pass\nthe last score check,\nall shapes will be\ncleared. Try to have\nmany shapes by then.",
+        [255, 130]
+      );
+    }
   },
 
   renderScoreCheck: function () {
@@ -545,7 +614,7 @@ const PLAY_SCENE = {
         )} all\nscore gained when\nclearing ${
           SHAPES_COLORS_NAMES[this.multColorIndex]
         } shapes.\nChange color after.`,
-        [245, 110]
+        [250, 110]
       );
     }
   },
@@ -641,6 +710,41 @@ const PLAY_SCENE = {
       line(l[0][0], l[0][1], l[1][0], l[1][1]);
     }
 
+    // render portal lines
+    strokeWeight(7);
+    for (let i = 0; i < activePortalLines.length; i++) {
+      const { gridLine, shape } = activePortalLines[i];
+      stroke(255);
+      line(gridLine[0][0], gridLine[0][1], gridLine[1][0], gridLine[1][1]);
+
+      if (
+        (this.selectedPieceIndex === null) &
+        lineIsHovered(gridLine[0], gridLine[1])
+      ) {
+        fill(255, 100 + cos(frameCount * 7) * 50);
+        noStroke();
+        beginShape();
+        for (let v = 0; v < shape.points.length; v++) {
+          vertex(shape.points[v][0], shape.points[v][1]);
+        }
+        endShape(CLOSE);
+        // the other shape
+        beginShape();
+        for (let v = 0; v < shape.portalNeighbor.points.length; v++) {
+          vertex(
+            shape.portalNeighbor.points[v][0],
+            shape.portalNeighbor.points[v][1]
+          );
+        }
+        endShape(CLOSE);
+        // tooltip
+        tooltip.set(
+          "PORTAL: allows these 2\nshapes to be adjacent.",
+          [260, 60]
+        );
+      }
+    }
+
     // render placeable hints
     if (this.selectedPieceIndex !== null) {
       stroke(255, 255, 0);
@@ -729,6 +833,7 @@ const PLAY_SCENE = {
         if (scoreCheckIndex < SCORE_CHECK_AMOUNTS.length - 1) {
           scoreCheckIndex++;
           this.turnsLeft = TURNS_PER_CHECK;
+          this.spawnPortal();
         }
         // last check?
         else {
@@ -961,8 +1066,12 @@ function checkShape(
 
   currentGroup.push(shape); // add self to group
   if (doesAddToGroups) groups.push(currentGroup);
-  for (let nb = 0; nb < shape.nShapes.length; nb++) {
-    const nShape = shape.nShapes[nb];
+  const neighbors = shape.nShapes.slice(0);
+  if (shape.portalNeighbor) {
+    neighbors.push(shape.portalNeighbor);
+  }
+  for (let nb = 0; nb < neighbors.length; nb++) {
+    const nShape = neighbors[nb];
     // jump to that shape if same color OR is chroma
     if (
       nShape &&

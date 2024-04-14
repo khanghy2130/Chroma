@@ -23,12 +23,11 @@ const tooltip = {
         this.bgSize[0] / 2,
         width - this.bgSize[0] / 2
       );
-      const alphaValue = this.progress * 255;
       noStroke();
-      fill(DARK_COLOR, alphaValue);
+      fill(DARK_COLOR, this.progress * 220);
       rect(xValue, this.bgSize[1] / 2 + yValue, this.bgSize[0], this.bgSize[1]);
       textSize(20);
-      fill(LIGHT_COLOR, alphaValue);
+      fill(LIGHT_COLOR, this.progress * 255);
       text(this.content, xValue, this.bgSize[1] / 2 + yValue);
     }
   },
