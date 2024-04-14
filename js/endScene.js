@@ -43,7 +43,6 @@ const END_SCENE = {
       text("Play again", x, y);
     },
     () => {
-      START_SCENE.tutorialOn = false;
       SCENE_TRANSITION.switchScene("PLAY");
     }
   ),

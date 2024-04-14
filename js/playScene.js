@@ -1046,6 +1046,8 @@ const TUTORIAL = {
   nextTutorial: function () {
     if (this.index < 3) {
       this.popupProgress = 1;
+    } else {
+      START_SCENE.tutorialOn = false;
     }
     this.index++;
   },
