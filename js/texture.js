@@ -8,6 +8,7 @@ const TEXTURE_LOADER = {
   textureGraphics: null,
   textureProgress: 0, // 0: create new graphics
 
+  negativeImages: { square: null, triangle: null },
   // 4 colors, each with 3 images
   squareImages: [],
   triangleImages: [],
@@ -17,24 +18,37 @@ const TEXTURE_LOADER = {
     let maskGraphics = createGraphics(150, 150, P2D);
     // maskGraphics.background(0); // KA
     maskGraphics.rectMode(CENTER);
-    maskGraphics.fill(255);
     maskGraphics.noStroke();
     maskGraphics.rect(
       maskGraphics.width / 2,
       maskGraphics.height / 2,
       130,
-      130,
-      20
+      130
     );
     this.squareMask = maskGraphics.get();
 
-    const r = 30;
+    // negative square mask
+    maskGraphics = createGraphics(150, 150, P2D);
+    // maskGraphics.background(0); // KA
+    maskGraphics.rectMode(CENTER);
+    maskGraphics.noStroke();
+    maskGraphics.fill(255, 150);
+    maskGraphics.rect(
+      maskGraphics.width / 2,
+      maskGraphics.height / 2,
+      130,
+      130
+    );
+    let negSquareMask = maskGraphics.get();
+    maskGraphics.background(255);
+    this.negativeImages.square = maskGraphics.get();
+    this.negativeImages.square.mask(negSquareMask);
+
+    const r = 34;
     const rsqrt3 = r * sqrt(3);
     maskGraphics = createGraphics(150, 150, P2D);
     // maskGraphics.background(0); // KA
-    maskGraphics.strokeJoin(ROUND);
-    maskGraphics.strokeWeight(20);
-    maskGraphics.stroke(255);
+    noStroke();
     maskGraphics.triangle(
       maskGraphics.width / 2,
       maskGraphics.height / 2 - r * 2,
@@ -44,6 +58,26 @@ const TEXTURE_LOADER = {
       maskGraphics.height / 2 + r
     );
     this.triangleMask = maskGraphics.get();
+
+    // negative triangle mask
+    maskGraphics = createGraphics(150, 150, P2D);
+    // maskGraphics.background(0); // KA
+    maskGraphics.strokeJoin(ROUND);
+    maskGraphics.strokeWeight(20);
+    maskGraphics.noStroke();
+    maskGraphics.fill(255, 150);
+    maskGraphics.triangle(
+      maskGraphics.width / 2,
+      maskGraphics.height / 2 - r * 2,
+      maskGraphics.width / 2 - rsqrt3,
+      maskGraphics.height / 2 + r,
+      maskGraphics.width / 2 + rsqrt3,
+      maskGraphics.height / 2 + r
+    );
+    let negTriangleMask = maskGraphics.get();
+    maskGraphics.background(255);
+    this.negativeImages.triangle = maskGraphics.get();
+    this.negativeImages.triangle.mask(negTriangleMask);
   },
 
   // throughout multple frames

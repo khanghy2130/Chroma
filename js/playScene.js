@@ -261,13 +261,7 @@ const PLAY_SCENE = {
         push(); // pushMatrix(); // KA
         translate(fShape.pos[0], fShape.pos[1]);
         rotate(fShape.r + fShape.renderData.textureOri);
-        image(
-          fShape.renderData.img,
-          0,
-          0,
-          fShape.renderData.size,
-          fShape.renderData.size
-        );
+        image(fShape.renderData.img, 0, 0, SHAPE_SIZE, SHAPE_SIZE);
         // render special
         if (fShape.renderData.special === "X") {
           rotate(-flyer.r - fShape.r - fShape.renderData.textureOri);
@@ -401,13 +395,7 @@ const PLAY_SCENE = {
       push(); // pushMatrix(); // KA
       translate(shape.centerPos[0], shape.centerPos[1]);
       rotate(GRID_ORI[shape.shapeIndex] + shape.renderData.textureOri);
-      image(
-        shape.renderData.img,
-        0,
-        0,
-        shape.renderData.size,
-        shape.renderData.size
-      );
+      image(shape.renderData.img, 0, 0, SHAPE_SIZE, SHAPE_SIZE);
       // render special
       if (shape.renderData.special === "X") {
         rotate(-GRID_ORI[shape.shapeIndex] - shape.renderData.textureOri);

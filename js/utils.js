@@ -28,8 +28,7 @@ const GMAD = 20; // game message animation duration
 // GRID
 const SEAL_SIZE = 25;
 const SCALER = 42; // grid scale
-const SQUARE_SIZE = 85;
-const TRIANGLE_SIZE = 75;
+const SHAPE_SIZE = 85;
 const PLACEABLE_DIAMETER = 20;
 const CORES = [];
 const GRID_LINES = [];
@@ -103,6 +102,9 @@ function newRenderData(isSquare, colorIndex) {
     else if (randomNum < SEAL_CHANCE + CHROMA_CHANCE) special = "CHROMA";
   }
   return {
+    // img: isSquare /////
+    //   ? TEXTURE_LOADER.negativeImages.square
+    //   : TEXTURE_LOADER.negativeImages.triangle,
     img: getRandomItem(
       (isSquare ? TEXTURE_LOADER.squareImages : TEXTURE_LOADER.triangleImages)[
         colorIndex
@@ -111,7 +113,6 @@ function newRenderData(isSquare, colorIndex) {
     textureOri: isSquare ? randomInt(0, 4) * 90 : randomInt(0, 3) * 120,
     colorIndex: colorIndex,
     special: special,
-    size: isSquare ? SQUARE_SIZE : TRIANGLE_SIZE,
     isSquare: isSquare,
   };
 }
