@@ -1053,11 +1053,11 @@ const PLAY_SCENE = {
         const group = groups[i];
         if (group.length >= 4) clearedShapes = clearedShapes.concat(group);
       }
-      clearedShapes.sort(function (shapeA, shapeB) {
-        return shapeA.centerPos[0] - shapeB.centerPos[0];
-      });
     }
 
+    clearedShapes.sort(function (shapeA, shapeB) {
+      return shapeA.centerPos[0] - shapeB.centerPos[0];
+    });
     this.isClearing = clearedShapes.length > 0;
 
     const chromas = [];
