@@ -32,7 +32,7 @@ const TEXTURE_LOADER = {
     // maskGraphics.background(0); // KA
     maskGraphics.rectMode(CENTER);
     maskGraphics.noStroke();
-    maskGraphics.fill(255, 150);
+    maskGraphics.fill(255, 170); // transparency
     maskGraphics.rect(
       maskGraphics.width / 2,
       maskGraphics.height / 2,
@@ -65,7 +65,7 @@ const TEXTURE_LOADER = {
     maskGraphics.strokeJoin(ROUND);
     maskGraphics.strokeWeight(20);
     maskGraphics.noStroke();
-    maskGraphics.fill(255, 150);
+    maskGraphics.fill(255, 170); // transparency
     maskGraphics.triangle(
       maskGraphics.width / 2,
       maskGraphics.height / 2 - r * 2,

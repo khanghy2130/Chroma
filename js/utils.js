@@ -1,4 +1,4 @@
-const __skip__ = !true;
+const __skip__ = !!true;
 
 const SCORE_CHECK_AMOUNTS = [500, 2000, 4000, 7000, 10000];
 const TURNS_PER_CHECK = 10;
@@ -102,9 +102,9 @@ function newRenderData(isSquare, colorIndex) {
     else if (randomNum < SEAL_CHANCE + CHROMA_CHANCE) special = "CHROMA";
   }
   return {
-    // img: isSquare /////
-    //   ? TEXTURE_LOADER.negativeImages.square
-    //   : TEXTURE_LOADER.negativeImages.triangle,
+    imgNeg: isSquare
+      ? TEXTURE_LOADER.negativeImages.square
+      : TEXTURE_LOADER.negativeImages.triangle,
     img: getRandomItem(
       (isSquare ? TEXTURE_LOADER.squareImages : TEXTURE_LOADER.triangleImages)[
         colorIndex

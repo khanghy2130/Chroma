@@ -2,9 +2,9 @@ const PLAY_SCENE = {
   popupMessage: "",
   gameEnded: false,
   finalClearAll: false,
-  outOfSpace: false,
   turnsLeft: 0,
   activePlusDot: null,
+  negShapes: [], // empty if placed a normal piece
 
   // Piece: {type, flyer, placeables}
   pieces: [],
@@ -12,7 +12,7 @@ const PLAY_SCENE = {
   selectedPieceIndex: null,
   hoveredPlaceable: null,
   confirmHoveredPlaceable: null, // for touchscreen
-  placeableGenIndex: 0, // 3 would be done
+  placeableGenIndex: 0,
 
   isClearing: false,
   pendingScoreCheck: false,
@@ -26,6 +26,32 @@ const PLAY_SCENE = {
   multIsActive: false,
   multColorIndex: null,
   plusDot: null,
+
+  useNeg: false,
+  negButton: new Btn(
+    70,
+    110,
+    110,
+    30,
+    function (x, y) {
+      textSize(20);
+      noStroke();
+      fill(LIGHT_COLOR);
+      text(PLAY_SCENE.useNeg ? "NEGATIVE" : "POSITIVE", x, y);
+    },
+    function () {
+      PLAY_SCENE.toggleNeg();
+    }
+  ),
+  toggleNeg: function () {
+    this.useNeg = !this.useNeg;
+    this.placeableGenIndex = 0; // reset generation
+    for (let i = 0; i < 3; i++) {
+      this.pieces[i].isNeg = this.useNeg;
+      this.pieces[i].placeables = [];
+      this.pieceBtns[i].glow = 1;
+    }
+  },
 
   refreshMult: function () {
     this.multIsActive = false;
@@ -100,10 +126,10 @@ const PLAY_SCENE = {
       multScaler: 1,
     };
 
+    this.useNeg = false;
     this.popupMessage = "";
     this.gameEnded = false;
     this.finalClearAll = false;
-    this.outOfSpace = false;
     this.placeableGenIndex = 0;
     this.selectedPieceIndex = null;
     this.pendingCheckClear = false;
@@ -251,7 +277,8 @@ const PLAY_SCENE = {
     for (let i = 0; i < pieceIndices.length; i++) {
       // render piece flyer
       push(); // pushMatrix(); // KA
-      const flyer = this.pieces[pieceIndices[i]].flyer;
+      const piece = this.pieces[pieceIndices[i]];
+      const flyer = piece.flyer;
       translate(flyer.pos[0], flyer.pos[1]);
       rotate(flyer.r);
       scale(flyer.scaling);
@@ -261,29 +288,35 @@ const PLAY_SCENE = {
         push(); // pushMatrix(); // KA
         translate(fShape.pos[0], fShape.pos[1]);
         rotate(fShape.r + fShape.renderData.textureOri);
-        image(fShape.renderData.img, 0, 0, SHAPE_SIZE, SHAPE_SIZE);
-        // render special
-        if (fShape.renderData.special === "X") {
-          rotate(-flyer.r - fShape.r - fShape.renderData.textureOri);
-          noStroke();
-          ellipse(0, 0, SEAL_SIZE, SEAL_SIZE);
-          stroke(LIGHT_COLOR);
-          line(-5, -5, 5, 5);
-          line(-5, 5, 5, -5);
-        } else if (fShape.renderData.special === "CHROMA") {
-          // change texture after a bit
-          if (frameCount % 30 === 0) {
-            fShape.renderData.img = getRandomItem(
-              (fShape.renderData.isSquare
-                ? TEXTURE_LOADER.squareImages
-                : TEXTURE_LOADER.triangleImages)[randomInt(0, 4)]
-            );
-            fShape.renderData.textureOri = fShape.renderData.isSquare
-              ? randomInt(0, 4) * 90
-              : randomInt(0, 3) * 120;
+        if (piece.isNeg) {
+          image(fShape.renderData.imgNeg, 0, 0, SHAPE_SIZE, SHAPE_SIZE);
+        }
+        // not negative?
+        else {
+          image(fShape.renderData.img, 0, 0, SHAPE_SIZE, SHAPE_SIZE);
+          // render special
+          if (fShape.renderData.special === "X") {
+            rotate(-flyer.r - fShape.r - fShape.renderData.textureOri);
+            noStroke();
+            ellipse(0, 0, SEAL_SIZE, SEAL_SIZE);
+            stroke(LIGHT_COLOR);
+            line(-5, -5, 5, 5);
+            line(-5, 5, 5, -5);
+          } else if (fShape.renderData.special === "CHROMA") {
+            // change texture after a bit
+            if (frameCount % 30 === 0) {
+              fShape.renderData.img = getRandomItem(
+                (fShape.renderData.isSquare
+                  ? TEXTURE_LOADER.squareImages
+                  : TEXTURE_LOADER.triangleImages)[randomInt(0, 4)]
+              );
+              fShape.renderData.textureOri = fShape.renderData.isSquare
+                ? randomInt(0, 4) * 90
+                : randomInt(0, 3) * 120;
+            }
+            noStroke();
+            ellipse(0, 0, 10, 10);
           }
-          noStroke();
-          ellipse(0, 0, 10, 10);
         }
         pop(); // popMatrix(); // KA
       }
@@ -296,7 +329,7 @@ const PLAY_SCENE = {
       if (pieceIndices[i] === this.selectedPieceIndex) {
         // check to show tooltip: no space
         if (
-          this.placeableGenIndex > 3 &&
+          this.placeableGenIndex > 2 &&
           this.pieces[pieceIndices[i]].placeables.length === 0
         ) {
           tooltip.set("No possible placement.", [265, 50]);
@@ -575,7 +608,7 @@ const PLAY_SCENE = {
         `SCORE CHECK #${scoreCheckIndex + 1}: get\n${
           SCORE_CHECK_AMOUNTS[scoreCheckIndex]
         } score to pass,\n${this.turnsLeft} turns remaining.`,
-        [235, 90]
+        [235, 80]
       );
     }
   },
@@ -685,6 +718,7 @@ const PLAY_SCENE = {
     this.renderScoreCheck();
     this.renderMultiplier();
     this.renderAdder();
+    this.negButton.render();
 
     noStroke();
     this.renderNumFlashers();
@@ -736,12 +770,17 @@ const PLAY_SCENE = {
 
     // render placeable hints
     if (this.selectedPieceIndex !== null) {
-      stroke(255, 255, 0);
+      const piece = this.pieces[this.selectedPieceIndex];
+      if (piece.isNeg) {
+        stroke(255, 0, 0);
+      } else {
+        stroke(255, 255, 0);
+      }
       strokeWeight(10);
       if (this.hoveredPlaceable) {
         point(this.hoveredPlaceable.pos[0], this.hoveredPlaceable.pos[1]);
       } else {
-        const placeables = this.pieces[this.selectedPieceIndex].placeables;
+        const placeables = piece.placeables;
         for (let i = 0; i < placeables.length; i++) {
           const placeable = placeables[i];
           point(placeable.pos[0], placeable.pos[1]);
@@ -807,11 +846,21 @@ const PLAY_SCENE = {
       }
     }
 
+    // set negative tooltip on hover
+    for (let i = 0; i < this.pieceBtns.length; i++) {
+      if (this.pieces[i].isNeg && this.pieceBtns[i].isHovered) {
+        tooltip.set(
+          "NEGATIVE: place on existing\nshapes to clear them.",
+          [310, 50]
+        );
+        break;
+      }
+    }
     tooltip.render();
 
     let setMessage = false;
 
-    // do score check & out of space check
+    // do score check
     if (this.pendingScoreCheck && !this.isClearing) {
       this.pendingScoreCheck = false;
       // enough score?
@@ -834,13 +883,6 @@ const PLAY_SCENE = {
         setMessage = true;
         this.gameEnded = true;
       }
-    }
-
-    // out of space check
-    if (this.outOfSpace && !this.gameEnded) {
-      this.gameEnded = true;
-      this.popupMessage = "Out of space";
-      setMessage = true;
     }
 
     // set message?
@@ -893,10 +935,12 @@ const PLAY_SCENE = {
   },
 
   mouseClicked: function () {
+    if (this.gameEnded) return;
+
     // placing a piece (hovering on placeable & no more flashers)
     if (this.hoveredPlaceable !== null) {
       // cancel if still calculating placeables OR not added last score OR game over
-      if (this.placeableGenIndex < 4 || this.isClearing || this.gameEnded) {
+      if (this.placeableGenIndex < 3 || this.isClearing || this.gameEnded) {
         return;
       }
 
@@ -908,16 +952,24 @@ const PLAY_SCENE = {
         this.confirmHoveredPlaceable = null;
       }
 
-      const flyer = this.pieces[this.selectedPieceIndex].flyer;
-      // apply renderData to real shapes
+      const piece = this.pieces[this.selectedPieceIndex];
+      const flyer = piece.flyer;
+      const negShapes = [];
       for (let i = 0; i < flyer.fShapes.length; i++) {
         const shape = this.hoveredPlaceable.shapes[i];
-        const renderData = flyer.fShapes[i].renderData;
-        shape.renderData = renderData;
-        renderData.textureOri +=
-          this.hoveredPlaceable.r +
-          flyer.fShapes[i].r -
-          GRID_ORI[shape.shapeIndex];
+
+        if (piece.isNeg) {
+          negShapes.push(shape);
+        }
+        // apply renderData to real shapes
+        else {
+          const renderData = flyer.fShapes[i].renderData;
+          shape.renderData = renderData;
+          renderData.textureOri +=
+            this.hoveredPlaceable.r +
+            flyer.fShapes[i].r -
+            GRID_ORI[shape.shapeIndex];
+        }
         this.placementFlashers.push({
           shape: shape,
           progress: 0,
@@ -933,19 +985,29 @@ const PLAY_SCENE = {
       this.selectedPieceIndex = null; // deselect
       this.placeableGenIndex = 0; // trigger recalculate
       this.pendingCheckClear = true;
+      this.negShapes = negShapes;
       this.turnsLeft--;
+      if (this.useNeg) {
+        this.toggleNeg(); // set back to positive
+      }
       _playSound(sounds.piecePlaced, 2);
       return;
     }
 
     // piece button clicked
     for (let i = 0; i < this.pieceBtns.length; i++) {
-      if (this.pieceBtns[i].isHovered) return this.pieceBtns[i].clicked();
+      if (this.pieceBtns[i].isHovered) {
+        return this.pieceBtns[i].clicked();
+      }
+    }
+
+    // neg button clicked
+    if (this.negButton.isHovered) {
+      return this.negButton.clicked();
     }
   },
 
   pieceBtnClicked: function (pieceIndex) {
-    if (this.gameEnded || this.outOfSpace) return;
     this.selectedPieceIndex =
       this.selectedPieceIndex !== pieceIndex ? pieceIndex : null;
     if (START_SCENE.tutorialOn && TUTORIAL.index === 0) {
@@ -959,8 +1021,17 @@ const PLAY_SCENE = {
     const groups = [];
     let clearedShapes = [];
 
+    // if placed a negative piece, use the piece shapes
+    if (this.negShapes.length > 0) {
+      for (let i = 0; i < this.negShapes.length; i++) {
+        if (this.negShapes[i].renderData !== null) {
+          clearedShapes.push(this.negShapes[i]);
+        }
+      }
+      this.negShapes = []; // reset
+    }
     // final clear (won) would clear all shapes
-    if (this.finalClearAll) {
+    else if (this.finalClearAll) {
       for (let i = 0; i < ALL_SHAPES.length; i++) {
         if (ALL_SHAPES[i].renderData !== null) {
           clearedShapes.push(ALL_SHAPES[i]);
