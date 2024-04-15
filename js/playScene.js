@@ -207,7 +207,7 @@ const PLAY_SCENE = {
         getPortalLine(PLIndex - 1).isActive ||
         getPortalLine(PLIndex + 1).isActive
       ) {
-        if (random() < 0.8) {
+        if (random() < 0.9) {
           continue;
         }
       }
@@ -238,6 +238,7 @@ const PLAY_SCENE = {
       }
       break;
     }
+    this.clearShapes(); // check clear again
   },
 
   renderPieces: function () {
@@ -964,6 +965,7 @@ const PLAY_SCENE = {
     }
   },
 
+  // check to clear
   clearShapes: function () {
     const checkedShapes = {};
     const groups = [];
