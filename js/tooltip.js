@@ -17,9 +17,9 @@ const tooltip = {
       this.progress = max(0, this.progress - 0.1);
     }
     if (this.progress > 0) {
-      const yValue = mouseY + 30;
+      const yValue = _mouseY + 30;
       const xValue = constrain(
-        mouseX,
+        _mouseX,
         this.bgSize[0] / 2,
         width - this.bgSize[0] / 2
       );

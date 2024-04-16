@@ -25,9 +25,14 @@ function _playSound(sound, rate) {
 }
 // nKA
 
+let scaleFactor = 1;
+let canvas;
 function setup() {
-  createCanvas(600, 600);
+  // nKA
+  canvas = createCanvas(600, 600, document.getElementById("game-canvas"));
+  windowResized();
 
+  // nKA
   if (__skip__) {
     IMAGES_AMOUNT = 1;
     START_SCENE.t = 453;
@@ -53,7 +58,10 @@ function setup() {
   START_SCENE.titleSetup();
 }
 
+let _mouseX, _mouseY;
 function draw() {
+  _mouseX = floor(mouseX / scaleFactor);
+  _mouseY = floor(mouseY / scaleFactor);
   touchCountdown--;
   cursor(ARROW);
   if (scene === "PLAY") {
@@ -79,4 +87,11 @@ function touchEnded() {
   } else if (scene === "END") {
     END_SCENE.mouseClicked();
   }
+}
+
+// nKA
+function windowResized() {
+  viewportWidth = Math.min(window.innerWidth, window.innerHeight);
+  scaleFactor = viewportWidth / 600;
+  canvas.elt.style.transform = "scale(" + scaleFactor + ")";
 }

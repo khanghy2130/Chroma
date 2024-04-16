@@ -351,7 +351,7 @@ const PLAY_SCENE = {
           }
           targetRotation = this.hoveredPlaceable.r;
         } else {
-          targetPos = [mouseX, mouseY];
+          targetPos = [_mouseX, _mouseY];
         }
       }
       // piece not selected?
@@ -409,7 +409,7 @@ const PLAY_SCENE = {
       // check hover
       if (
         this.hoveredPlaceable === null &&
-        dist(mouseX, mouseY, placeable.pos[0], placeable.pos[1]) <
+        dist(_mouseX, _mouseY, placeable.pos[0], placeable.pos[1]) <
           PLACEABLE_DIAMETER * 1 // hover range
       ) {
         this.hoveredPlaceable = placeable;
@@ -440,7 +440,7 @@ const PLAY_SCENE = {
         // tooltip
         if (
           PLAY_SCENE.selectedPieceIndex === null &&
-          dist(mouseX, mouseY, shape.centerPos[0], shape.centerPos[1]) <
+          dist(_mouseX, _mouseY, shape.centerPos[0], shape.centerPos[1]) <
             SEAL_SIZE / 2
         ) {
           tooltip.set(
@@ -465,7 +465,7 @@ const PLAY_SCENE = {
         // tooltip
         if (
           PLAY_SCENE.selectedPieceIndex === null &&
-          dist(mouseX, mouseY, shape.centerPos[0], shape.centerPos[1]) <
+          dist(_mouseX, _mouseY, shape.centerPos[0], shape.centerPos[1]) <
             SEAL_SIZE / 2
         ) {
           tooltip.set(
@@ -561,10 +561,10 @@ const PLAY_SCENE = {
     // tooltip
     if (
       PLAY_SCENE.selectedPieceIndex === null &&
-      mouseX > 10 &&
-      mouseX < 140 &&
-      mouseY > 25 &&
-      mouseY < 85
+      _mouseX > 10 &&
+      _mouseX < 140 &&
+      _mouseY > 25 &&
+      _mouseY < 85
     ) {
       tooltip.set(
         "Psst... when you pass\nthe last score check,\nall shapes will be\ncleared. Try to have\nmany shapes by then.",
@@ -580,12 +580,7 @@ const PLAY_SCENE = {
     fill(LIGHT_COLOR);
     text(SCORE_CHECK_AMOUNTS[scoreCheckIndex], 525, 50);
     textSize(20);
-    // flash when less than 3 turns
-    fill(
-      this.turnsLeft < 3
-        ? color(LIGHT_COLOR, 150 + cos(frameCount * 5) * 100)
-        : LIGHT_COLOR
-    );
+    fill(LIGHT_COLOR);
     text(this.turnsLeft + " left", 525, 80);
 
     // line through if score already met
@@ -596,13 +591,22 @@ const PLAY_SCENE = {
       noStroke();
     }
 
+    // flash when less than 4 turns
+    if (
+      this.turnsLeft < 4 &&
+      totalScore < SCORE_CHECK_AMOUNTS[scoreCheckIndex]
+    ) {
+      fill(255, max(0, cos(frameCount * 5) * 50 + 30));
+      rect(525, 58, 120, 76, 10);
+    }
+
     // tooltip
     if (
       PLAY_SCENE.selectedPieceIndex === null &&
-      mouseX > 465 &&
-      mouseX < 585 &&
-      mouseY > 20 &&
-      mouseY < 96
+      _mouseX > 465 &&
+      _mouseX < 585 &&
+      _mouseY > 20 &&
+      _mouseY < 96
     ) {
       tooltip.set(
         `SCORE CHECK #${scoreCheckIndex + 1}: get\n${
@@ -628,7 +632,7 @@ const PLAY_SCENE = {
     // tooltip
     if (
       PLAY_SCENE.selectedPieceIndex === null &&
-      dist(mouseX, mouseY, 70, 400) < 40
+      dist(_mouseX, _mouseY, 70, 400) < 40
     ) {
       tooltip.set(
         `MULTIPLIER: x${multiplier.toFixed(
@@ -656,7 +660,7 @@ const PLAY_SCENE = {
     // tooltip
     if (
       PLAY_SCENE.selectedPieceIndex === null &&
-      dist(mouseX, mouseY, 530, 400) < 40
+      dist(_mouseX, _mouseY, 530, 400) < 40
     ) {
       tooltip.set(
         "ADDER: Each shape cleared\ntemporarily +10 ADDER.\n(extra score for more\nshapes cleared in 1 turn)",
@@ -809,7 +813,7 @@ const PLAY_SCENE = {
     // tooltip & highlight shapes
     if (
       PLAY_SCENE.selectedPieceIndex === null &&
-      dist(mouseX, mouseY, this.plusDot.pos[0], this.plusDot.pos[1]) <
+      dist(_mouseX, _mouseY, this.plusDot.pos[0], this.plusDot.pos[1]) <
         SEAL_SIZE / 2
     ) {
       tooltip.set(
@@ -1196,7 +1200,7 @@ const TUTORIAL = {
         break;
     }
     // check hover to hide
-    if (mouseY < this.y + this.h / 2) {
+    if (_mouseY < this.y + this.h / 2) {
       this.popupAlpha = max(0, this.popupAlpha - 0.2);
     } else {
       this.popupAlpha = min(1, this.popupAlpha + 0.2);

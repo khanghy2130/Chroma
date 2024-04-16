@@ -13,14 +13,13 @@
         padding: 0;
       }
       canvas {
-        display: block;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
       }
       body {
         min-height: 100vh;
-        background: black;
+        background: rgb(25, 25, 25);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -28,7 +27,7 @@
     </style>
   </head>
   <body>
-    <main></main>
+    <canvas id="game-canvas"></canvas>
 
     <script src="js/utils.js"></script>
     <script src="js/tooltip.js"></script>

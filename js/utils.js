@@ -1,6 +1,6 @@
 const __skip__ = !true;
 
-const SCORE_CHECK_AMOUNTS = [500, 2000, 4000, 7000, 10000];
+const SCORE_CHECK_AMOUNTS = [300, 1000, 3000, 6000, 10000];
 const TURNS_PER_CHECK = 10;
 const PIECE_TYPES_CHANCES = [15, 40]; // 1 shape, 2 shapes
 const SEAL_CHANCE = 0.16;
@@ -140,8 +140,8 @@ function nsi(n) {
 function lineIsHovered(point1, point2) {
   const dxL = point2[0] - point1[0];
   const dyL = point2[1] - point1[1];
-  const dxP = mouseX - point1[0];
-  const dyP = mouseY - point1[1];
+  const dxP = _mouseX - point1[0];
+  const dyP = _mouseY - point1[1];
 
   const squareLen = dxL * dxL + dyL * dyL;
   const dotProd = dxP * dxL + dyP * dyL;

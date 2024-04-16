@@ -23,10 +23,10 @@ class Btn {
     // check hover
     if (
       SCENE_TRANSITION.nextScene === null &&
-      mouseX > this.x - this.w / 2 &&
-      mouseX < this.x + this.w / 2 &&
-      mouseY > this.y - this.h / 2 &&
-      mouseY < this.y + this.h / 2
+      _mouseX > this.x - this.w / 2 &&
+      _mouseX < this.x + this.w / 2 &&
+      _mouseY > this.y - this.h / 2 &&
+      _mouseY < this.y + this.h / 2
     ) {
       if (!this.isHovered) {
         this.glow = 1; // glow up on initial hover
