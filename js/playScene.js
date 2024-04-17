@@ -559,13 +559,7 @@ const PLAY_SCENE = {
     );
 
     // tooltip
-    if (
-      PLAY_SCENE.selectedPieceIndex === null &&
-      _mouseX > 10 &&
-      _mouseX < 140 &&
-      _mouseY > 25 &&
-      _mouseY < 85
-    ) {
+    if (_mouseX > 10 && _mouseX < 140 && _mouseY > 25 && _mouseY < 85) {
       tooltip.set(
         "Psst... when you pass\nthe last score check,\nall shapes will be\ncleared. Try to have\nmany shapes by then.",
         [255, 130]
@@ -601,13 +595,7 @@ const PLAY_SCENE = {
     }
 
     // tooltip
-    if (
-      PLAY_SCENE.selectedPieceIndex === null &&
-      _mouseX > 465 &&
-      _mouseX < 585 &&
-      _mouseY > 20 &&
-      _mouseY < 96
-    ) {
+    if (_mouseX > 465 && _mouseX < 585 && _mouseY > 20 && _mouseY < 96) {
       tooltip.set(
         `SCORE CHECK #${scoreCheckIndex + 1}: get\n${
           SCORE_CHECK_AMOUNTS[scoreCheckIndex]
@@ -630,10 +618,7 @@ const PLAY_SCENE = {
     text("x" + multiplier.toFixed(1), 70, 400);
 
     // tooltip
-    if (
-      PLAY_SCENE.selectedPieceIndex === null &&
-      dist(_mouseX, _mouseY, 70, 400) < 40
-    ) {
+    if (dist(_mouseX, _mouseY, 70, 400) < 40) {
       tooltip.set(
         `MULTIPLIER: x${multiplier.toFixed(
           1
@@ -658,10 +643,7 @@ const PLAY_SCENE = {
     text("+" + (adder + temporaryAdder), 530, 400);
 
     // tooltip
-    if (
-      PLAY_SCENE.selectedPieceIndex === null &&
-      dist(_mouseX, _mouseY, 530, 400) < 40
-    ) {
+    if (dist(_mouseX, _mouseY, 530, 400) < 40) {
       tooltip.set(
         "ADDER: Each shape cleared\ntemporarily +10 ADDER.\n(extra score for more\nshapes cleared in 1 turn)",
         [295, 110]
@@ -744,10 +726,7 @@ const PLAY_SCENE = {
       stroke(255);
       line(gridLine[0][0], gridLine[0][1], gridLine[1][0], gridLine[1][1]);
 
-      if (
-        (this.selectedPieceIndex === null) &
-        lineIsHovered(gridLine[0], gridLine[1])
-      ) {
+      if (lineIsHovered(gridLine[0], gridLine[1])) {
         fill(255, 100 + cos(frameCount * 7) * 50);
         noStroke();
         beginShape();
