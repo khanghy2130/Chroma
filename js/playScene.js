@@ -993,7 +993,10 @@ const PLAY_SCENE = {
   pieceBtnClicked: function (pieceIndex) {
     this.selectedPieceIndex =
       this.selectedPieceIndex !== pieceIndex ? pieceIndex : null;
-    if (START_SCENE.tutorialOn && TUTORIAL.index === 0) {
+    if (
+      START_SCENE.tutorialOn &&
+      (TUTORIAL.index === 0 || TUTORIAL.index === 2)
+    ) {
       TUTORIAL.popupProgress = 1;
     }
   },
@@ -1137,7 +1140,7 @@ const TUTORIAL = {
   h: 80,
   msg: null,
   update: function () {
-    if (!START_SCENE.tutorialOn || this.index > 3) {
+    if (!START_SCENE.tutorialOn || this.index > 2) {
       return;
     }
     const PS = PLAY_SCENE;
@@ -1164,14 +1167,12 @@ const TUTORIAL = {
         }
         break;
       case 2:
-        this.msg = "Hover on stuffs to\nlearn more about them.";
-        // close when select piece
-        if (PLAY_SCENE.selectedPieceIndex !== null) {
-          this.nextTutorial();
+        if (PS.selectedPieceIndex === null) {
+          this.msg = "Hover on stuffs to\nlearn more about them.";
+        } else {
+          this.msg = "Click POSITIVE to switch.\nPass 5 score checks to win!";
         }
-        break;
-      case 3:
-        this.msg = "Pass 5 score checks to win.\nGood luck!";
+
         // close when place
         if (PLAY_SCENE.placementFlashers.length !== 0) {
           this.nextTutorial();
@@ -1197,7 +1198,7 @@ const TUTORIAL = {
     }
   },
   nextTutorial: function () {
-    if (this.index < 3) {
+    if (this.index < 2) {
       this.popupProgress = 1;
     } else {
       START_SCENE.tutorialOn = false;
