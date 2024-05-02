@@ -521,7 +521,7 @@ const PLAY_SCENE = {
         fl.hasCleared = true;
         fl.shape.renderData = null;
         this.triggerClear();
-        _playSound(sounds.shapeCleared, temporaryAdder * 0.1);
+        _playSound(sounds.shapeCleared, min(7, temporaryAdder * 0.1));
         this.numFlashers.push({
           pos: fl.shape.centerPos,
           addedScore:
