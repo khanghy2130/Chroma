@@ -89,7 +89,7 @@ const END_SCENE = {
 
     let displayScore;
     if (this.doneWithScore) {
-      displayScore = totalScore;
+      displayScore = floor(totalScore);
     } else {
       // set score based on progress
       displayScore = floor(
@@ -101,7 +101,7 @@ const END_SCENE = {
       );
       // check to stop animating score
       if (displayScore > totalScore) {
-        displayScore = totalScore;
+        displayScore = floor(totalScore);
         this.doneWithScore = true;
       }
     }
