@@ -126,6 +126,7 @@ const PLAY_SCENE = {
       multScaler: 1,
     };
 
+    this.previousTotalScore = 0;
     this.useNeg = false;
     this.popupMessage = "";
     this.gameEnded = false;
@@ -497,6 +498,7 @@ const PLAY_SCENE = {
     // set up clearing after placing animation
     if (this.pendingCheckClear && this.placementFlashers.length === 0) {
       this.pendingCheckClear = false;
+      this.previousTotalScore = totalScore;
       this.clearShapes();
       if (this.turnsLeft === 0) this.pendingScoreCheck = true;
     }
@@ -687,6 +689,8 @@ const PLAY_SCENE = {
     }
   },
 
+  previousTotalScore: 0,
+
   render: function () {
     // reset
     this.hoveredPlaceable = null;
@@ -709,6 +713,30 @@ const PLAY_SCENE = {
     noStroke();
     this.renderNumFlashers();
     this.renderClearFlashers();
+
+    // render score progress bar
+    rectMode(CORNER);
+    noStroke();
+    fill(GRID_COLOR);
+    rect(
+      0,
+      0,
+      (totalScore / SCORE_CHECK_AMOUNTS[scoreCheckIndex]) * width,
+      PROGRESS_BAR_HEIGHT
+    );
+
+    // added progress bar
+    if (temporaryAdder !== 0 && !this.gameEnded) {
+      fill(255, 255, 0);
+      rect(
+        (this.previousTotalScore / SCORE_CHECK_AMOUNTS[scoreCheckIndex]) *
+          width,
+        0,
+        (totalAdded / SCORE_CHECK_AMOUNTS[scoreCheckIndex]) * width,
+        PROGRESS_BAR_HEIGHT
+      );
+    }
+    rectMode(CENTER);
 
     // render grid lines
     stroke(GRID_COLOR);

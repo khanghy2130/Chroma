@@ -24,6 +24,7 @@ const CLEAR_RESULT_DURATION = 80;
 const TEXT_SHRINK_SPEED = 0.15;
 const GAME_MESSAGE_DURATION = 120;
 const GMAD = 20; // game message animation duration
+const PROGRESS_BAR_HEIGHT = 3;
 
 // GRID
 const SEAL_SIZE = 25;
