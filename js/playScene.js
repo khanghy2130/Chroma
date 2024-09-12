@@ -718,21 +718,16 @@ const PLAY_SCENE = {
     rectMode(CORNER);
     noStroke();
     fill(GRID_COLOR);
-    rect(
-      0,
-      0,
-      (totalScore / SCORE_CHECK_AMOUNTS[scoreCheckIndex]) * width,
-      PROGRESS_BAR_HEIGHT
-    );
+    const lastScore = SCORE_CHECK_AMOUNTS[SCORE_CHECK_AMOUNTS.length - 1];
+    rect(0, 0, (totalScore / lastScore) * width, PROGRESS_BAR_HEIGHT);
 
     // added progress bar
     if (temporaryAdder !== 0 && !this.gameEnded) {
       fill(255, 255, 0);
       rect(
-        (this.previousTotalScore / SCORE_CHECK_AMOUNTS[scoreCheckIndex]) *
-          width,
+        (this.previousTotalScore / lastScore) * width,
         0,
-        (totalAdded / SCORE_CHECK_AMOUNTS[scoreCheckIndex]) * width,
+        (totalAdded / lastScore) * width,
         PROGRESS_BAR_HEIGHT
       );
     }
